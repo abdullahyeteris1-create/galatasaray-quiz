@@ -260,7 +260,7 @@ begin
   select * into v_round from public.quiz_rounds where room_id=p_room and round_number=v_room.current_round for update;
   if not found then raise exception 'ROUND_NOT_FOUND'; end if;
   if v_now>=v_round.ends_at and v_round.revealed_at is null then
-    select case when count(*) = 1 then min(player_id) else null end into v_winner
+    select case when count(*) = 1 then (array_agg(player_id))[1] else null end into v_winner
       from public.quiz_answers a
       where a.round_id=v_round.id and a.is_correct=true
         and a.answered_at = (select min(earliest.answered_at) from public.quiz_answers earliest where earliest.round_id=v_round.id and earliest.is_correct=true);
