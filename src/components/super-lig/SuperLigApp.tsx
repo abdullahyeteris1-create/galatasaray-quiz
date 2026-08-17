@@ -9,7 +9,7 @@ import { getAudioManager } from "@/lib/audio/audioManager";
 import { isInvalidSessionError, mapQuizError } from "@/lib/quiz/errors";
 import { toTimestamp } from "@/lib/quiz/time";
 import { answerSuperLig, createSuperLigRoom, getSuperLigState, joinSuperLigRoom, startSuperLigGame, tickSuperLig } from "@/lib/super-lig/api";
-import { clearSuperLigSession, credentialsToSuperLigSession, loadSuperLigSession, saveSuperLigSession } from "@/lib/super-lig/storage";
+import { addRecentSuperLigQuestionIds, clearSuperLigSession, credentialsToSuperLigSession, getRecentSuperLigQuestionIds, loadSuperLigSession, saveSuperLigSession } from "@/lib/super-lig/storage";
 import type { SuperLigEra, SuperLigSession, SuperLigState } from "@/lib/super-lig/types";
 
 const audio = getAudioManager();
@@ -30,6 +30,7 @@ export function SuperLigApp() {
   const [questionCount, setQuestionCount] = useState(10);
   const [selected, setSelected] = useState<Record<string, number>>({});
   const locks = useRef(new Set<string>());
+  const recordedRounds = useRef(new Set<string>());
 
   const reset = (next: "home" | "create" = "home") => { clearSuperLigSession(); setSession(null); setState(null); setSelected({}); locks.current.clear(); setError(null); setScreen(next); };
 
@@ -42,9 +43,10 @@ export function SuperLigApp() {
   useEffect(() => { if (!session || booting) return; let stop = false; let timer: number | undefined; const poll = async () => { try { const s = await getSuperLigState(session.roomId, session.playerId, session.token); if (!stop) { setState(s.state); setOffset(s.serverOffsetMs); setError(null); if (s.state.room.status !== "finished") timer = window.setTimeout(poll, s.state.room.status === "waiting" ? 1000 : 500); } } catch (e) { if (!stop) { setError(isInvalidSessionError(e) ? "Oturum sona erdi." : "Bağlantı zayıf, yeniden deneniyor…"); timer = window.setTimeout(poll, 1500); } } }; void poll(); return () => { stop = true; if (timer) window.clearTimeout(timer); }; }, [session, booting]);
   useEffect(() => { if (!session || !state || state.room.status !== "playing" || state.room.host_player_id !== session.playerId) return; let stop = false; const tick = async () => { try { await tickSuperLig(session.roomId, session.playerId, session.token); } finally { if (!stop) window.setTimeout(tick, 700); } }; void tick(); return () => { stop = true; }; }, [session, state?.room.status, state?.room.host_player_id]);
   useEffect(() => { audio.setLobbyActive(screen !== "session" || state?.room.status === "waiting"); }, [screen, state?.room.status]);
+  useEffect(() => { const round = state?.round; if (!round || !state.reveal || recordedRounds.current.has(round.id)) return; recordedRounds.current.add(round.id); addRecentSuperLigQuestionIds([round.question_id]); }, [state?.reveal, state?.round]);
 
   async function open(credentials: SuperLigSession) { saveSuperLigSession(credentials); setSession(credentials); setScreen("session"); try { const s = await getSuperLigState(credentials.roomId, credentials.playerId, credentials.token); setState(s.state); setOffset(s.serverOffsetMs); } catch (e) { setError(mapQuizError(e)); } }
-  async function create() { if (!name.trim()) return; audio.activate(); setPending(true); setError(null); try { await open(credentialsToSuperLigSession(await createSuperLigRoom(name.trim(), era, questionCount))); } catch (e) { setError(mapQuizError(e, "Oda oluşturulamadı.")); } finally { setPending(false); } }
+  async function create() { if (!name.trim()) return; audio.activate(); setPending(true); setError(null); try { await open(credentialsToSuperLigSession(await createSuperLigRoom(name.trim(), era, questionCount, getRecentSuperLigQuestionIds()))); } catch (e) { setError(mapQuizError(e, "Oda oluşturulamadı.")); } finally { setPending(false); } }
   async function join() { if (!name.trim() || code.trim().length !== 6) return; audio.activate(); setPending(true); setError(null); try { await open(credentialsToSuperLigSession(await joinSuperLigRoom(code.trim(), name.trim()))); } catch (e) { setError(mapQuizError(e, "Odaya katılınamadı.")); } finally { setPending(false); } }
   async function start() { if (!session) return; audio.activate(); try { await startSuperLigGame(session.roomId, session.playerId, session.token); } catch (e) { setError(mapQuizError(e, "Oyun başlatılamadı.")); } }
   async function answer(option: number) { const round = state?.round; if (!session || !round || round.answered || locks.current.has(round.id)) return; locks.current.add(round.id); try { await answerSuperLig(session.roomId, round.id, session.playerId, session.token, option); setSelected((v) => ({ ...v, [round.id]: option })); } catch (e) { locks.current.delete(round.id); setError(mapQuizError(e)); } }

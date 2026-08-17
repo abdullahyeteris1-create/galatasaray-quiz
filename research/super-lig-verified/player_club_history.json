@@ -1,0 +1,10 @@
+[
+  {"player":"Serdar Aziz","club":"Bursaspor","from_year":2008,"to_year":2016,"loan":false,"source":"https://www.worldfootball.net/player_summary/serdar-aziz/2/","source_2":"https://www.transfermarkt.com/serdar-aziz/transfers/spieler/44996/transfer_id/1511116"},
+  {"player":"Serdar Aziz","club":"Galatasaray","from_year":2016,"to_year":2019,"loan":false,"source":"https://www.transfermarkt.com/serdar-aziz/transfers/spieler/44996/transfer_id/1511116"},
+  {"player":"Umut Bulut","club":"Kayserispor","from_year":2006,"to_year":2007,"loan":false,"source":"https://www.transfermarkt.com/umut-bulut/leistungsdatendetails/spieler/10143/verein/449"},
+  {"player":"Umut Bulut","club":"Trabzonspor","from_year":2006,"to_year":2011,"loan":false,"source":"https://www.transfermarkt.com/umut-bulut/leistungsdatendetails/spieler/10143/verein/449"},
+  {"player":"Ozan İpek","club":"Bursaspor","from_year":2009,"to_year":2013,"loan":false,"source":"https://www.worldfootball.net/player_summary/ozan-pek/2/"},
+  {"player":"Volkan Şen","club":"Bursaspor","from_year":2008,"to_year":2011,"loan":false,"source":"https://www.worldfootball.net/team_performance/bursaspor/tur-sueper-lig-2009-2010/"},
+  {"player":"Ali Tandoğan","club":"Bursaspor","from_year":2009,"to_year":2012,"loan":false,"source":"https://www.worldfootball.net/team_performance/bursaspor/tur-sueper-lig-2009-2010/"},
+  {"player":"Ömer Erdoğan","club":"Bursaspor","from_year":2008,"to_year":2013,"loan":false,"source":"https://www.worldfootball.net/team_performance/bursaspor/tur-sueper-lig-2009-2010/"}
+]

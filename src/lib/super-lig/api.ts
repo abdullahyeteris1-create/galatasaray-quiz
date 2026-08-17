@@ -19,11 +19,12 @@ async function rpcVoid(name: string, args: Record<string, unknown>) {
   await rpc<unknown>(name, args);
 }
 
-export function createSuperLigRoom(name: string, era: SuperLigEra, questionCount: number) {
-  return rpc<SuperLigCredentials>("quiz_super_lig_create_room", {
+export function createSuperLigRoom(name: string, era: SuperLigEra, questionCount: number, excludeQuestionIds: string[] = []) {
+  return rpc<SuperLigCredentials>("quiz_super_lig_create_room_v2", {
     p_name: name,
     p_era: era,
     p_question_count: questionCount,
+    p_exclude_question_ids: excludeQuestionIds.slice(-50),
   });
 }
 

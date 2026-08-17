@@ -1,6 +1,23 @@
 import type { SuperLigSession } from "./types";
 
 export const SUPER_LIG_SESSION_STORAGE_KEY = "super_lig_quiz_session";
+export const SUPER_LIG_RECENT_QUESTION_IDS_KEY = "super_lig_recent_question_ids";
+export const SUPER_LIG_RECENT_QUESTION_LIMIT = 50;
+
+export function getRecentSuperLigQuestionIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(SUPER_LIG_RECENT_QUESTION_IDS_KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    return [...new Set(parsed.filter((id): id is string => typeof id === "string"))].slice(-SUPER_LIG_RECENT_QUESTION_LIMIT);
+  } catch { return []; }
+}
+
+export function addRecentSuperLigQuestionIds(ids: string[]) {
+  if (typeof window === "undefined") return;
+  const merged = [...getRecentSuperLigQuestionIds(), ...ids];
+  window.localStorage.setItem(SUPER_LIG_RECENT_QUESTION_IDS_KEY, JSON.stringify([...new Set(merged)].slice(-SUPER_LIG_RECENT_QUESTION_LIMIT)));
+}
 
 function isSession(value: unknown): value is SuperLigSession {
   if (!value || typeof value !== "object") return false;

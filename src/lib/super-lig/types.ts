@@ -37,6 +37,7 @@ export type SuperLigPlayer = {
 
 export type SuperLigRound = {
   id: string;
+  question_id: string;
   number: number;
   starts_at: string;
   ends_at: string;
