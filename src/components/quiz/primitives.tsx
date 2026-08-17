@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
+import { useAudioPreference } from "@/hooks/useAudioPreference";
+
 type ArenaShellProps = {
   children: ReactNode;
   compact?: boolean;
@@ -11,9 +13,37 @@ export function ArenaShell({ children, compact = false }: ArenaShellProps) {
       <div className="arena-glow arena-glow-yellow" aria-hidden="true" />
       <div className="arena-glow arena-glow-red" aria-hidden="true" />
       <section className={`arena-phone ${compact ? "arena-phone-compact" : ""}`}>
+        <SoundControl />
         {children}
       </section>
     </main>
+  );
+}
+
+function SoundControl() {
+  const { enabled, toggle } = useAudioPreference();
+
+  return (
+    <button
+      className="sound-toggle"
+      type="button"
+      aria-label={enabled ? "Sesi kapat" : "Sesi aç"}
+      aria-pressed={enabled}
+      onClick={toggle}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 10v4h4l5 4V6l-5 4H4Z" />
+        {enabled ? (
+          <>
+            <path d="M16 9.5a4 4 0 0 1 0 5" />
+            <path d="M18.5 7a7.5 7.5 0 0 1 0 10" />
+          </>
+        ) : (
+          <path d="m16 9 5 6m0-6-5 6" />
+        )}
+      </svg>
+      <span className="sr-only">{enabled ? "Ses açık" : "Ses kapalı"}</span>
+    </button>
   );
 }
 
@@ -94,4 +124,3 @@ export function LoadingScreen({ label = "Arena hazırlanıyor…" }: { label?: s
     </ArenaShell>
   );
 }
-

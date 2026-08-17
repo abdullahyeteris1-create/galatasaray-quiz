@@ -17,6 +17,7 @@ import {
   loadSession,
   saveSession,
 } from "@/lib/quiz/storage";
+import { getAudioManager } from "@/lib/audio/audioManager";
 import type { QuizSession, QuizState, Screen } from "@/lib/quiz/types";
 
 import { CreateRoomScreen } from "./CreateRoomScreen";
@@ -26,6 +27,8 @@ import { HomeScreen } from "./HomeScreen";
 import { JoinRoomScreen } from "./JoinRoomScreen";
 import { LobbyScreen } from "./LobbyScreen";
 import { LoadingScreen } from "./primitives";
+
+const audioManager = getAudioManager();
 
 export function QuizApp() {
   const [screen, setScreen] = useState<Screen>("home");
@@ -41,12 +44,14 @@ export function QuizApp() {
   const [selectedByRound, setSelectedByRound] = useState<Record<string, number>>({});
   const answerLocks = useRef(new Set<string>());
   const latestRoundId = useRef<string | null>(null);
+  const lastPlayedRevealRoundId = useRef<string | null>(null);
 
   const roomId = session?.roomId ?? null;
   const playerId = session?.playerId ?? null;
   const token = session?.token ?? null;
 
   function resetTo(screenName: "home" | "create" = "home") {
+    audioManager.activate();
     clearSession();
     setSession(null);
     setQuizState(null);
@@ -192,6 +197,11 @@ export function QuizApp() {
     };
   }, [isHostPlaying, playerId, roomId, token]);
 
+  useEffect(() => {
+    const lobbyActive = screen !== "session" || quizState?.room.status === "waiting";
+    audioManager.setLobbyActive(lobbyActive);
+  }, [quizState?.room.status, screen]);
+
   async function openSession(nextSession: QuizSession) {
     saveSession(nextSession);
     setQuizState(null);
@@ -217,6 +227,7 @@ export function QuizApp() {
   }
 
   async function handleCreate(name: string, maxPlayers: number, questionCount: number) {
+    audioManager.activate();
     setPending(true);
     setActionError(null);
     try {
@@ -230,6 +241,7 @@ export function QuizApp() {
   }
 
   async function handleJoin(code: string, name: string) {
+    audioManager.activate();
     setPending(true);
     setActionError(null);
     try {
@@ -244,6 +256,7 @@ export function QuizApp() {
 
   async function handleStart() {
     if (!session || starting) return;
+    audioManager.activate();
     setStarting(true);
     setActionError(null);
 
@@ -290,10 +303,30 @@ export function QuizApp() {
     return roundId && selectedByRound[roundId] !== undefined ? selectedByRound[roundId] : null;
   }, [quizState?.round?.id, selectedByRound]);
 
+  useEffect(() => {
+    const reveal = quizState?.reveal;
+    const roundId = quizState?.round?.id;
+    if (!reveal || !roundId || lastPlayedRevealRoundId.current === roundId) return;
+
+    const sessionKey = `gs_quiz_reveal_played:${roundId}`;
+    try {
+      if (window.sessionStorage.getItem(sessionKey) === "1") {
+        lastPlayedRevealRoundId.current = roundId;
+        return;
+      }
+      window.sessionStorage.setItem(sessionKey, "1");
+    } catch {
+      // Session storage may be unavailable in private browsing contexts.
+    }
+
+    lastPlayedRevealRoundId.current = roundId;
+    audioManager.playRevealEffect(selectedOption === reveal.correct_option);
+  }, [quizState?.reveal, quizState?.round?.id, selectedOption]);
+
   if (booting) return <LoadingScreen label="Oturum kontrol ediliyor…" />;
 
   if (screen === "home") {
-    return <HomeScreen onCreate={() => { setActionError(null); setScreen("create"); }} onJoin={() => { setActionError(null); setScreen("join"); }} />;
+    return <HomeScreen onCreate={() => { audioManager.activate(); setActionError(null); setScreen("create"); }} onJoin={() => { audioManager.activate(); setActionError(null); setScreen("join"); }} />;
   }
 
   if (screen === "create") {
