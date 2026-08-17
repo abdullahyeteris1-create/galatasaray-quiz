@@ -1,4 +1,6 @@
-import { ActionButton, ArenaShell, BrandMark } from "./primitives";
+import Image from "next/image";
+
+import { ActionButton, ArenaShell } from "./primitives";
 
 type HomeScreenProps = {
   onCreate: () => void;
@@ -16,7 +18,15 @@ export function HomeScreen({ onCreate, onJoin }: HomeScreenProps) {
         </div>
 
         <div className="home-hero">
-          <BrandMark />
+          <Image
+            className="home-logo"
+            src="/galatasaray-logo.png"
+            alt="Galatasaray Spor Kulübü logosu"
+            width={600}
+            height={600}
+            sizes="(min-width: 560px) 160px, 145px"
+            preload
+          />
           <p className="home-kicker">1905&apos;TEN BUGÜNE</p>
           <h1>Galatasaray<br /><span>Tarih Arenası</span></h1>
           <p className="home-copy">
@@ -38,4 +48,3 @@ export function HomeScreen({ onCreate, onJoin }: HomeScreenProps) {
     </ArenaShell>
   );
 }
-
