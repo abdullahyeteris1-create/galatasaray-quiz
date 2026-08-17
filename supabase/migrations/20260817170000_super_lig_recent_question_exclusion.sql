@@ -28,7 +28,10 @@ begin
   select count(*) into v_players from public.quiz_players where room_id=p_room; if v_players<>2 then raise exception 'NEED_EXACTLY_2_PLAYERS'; end if;
   v_exclude:=coalesce(v_room.super_lig_exclude_question_ids,'{}');
   select count(*) into v_available from public.quiz_questions q where q.active and q.game_type='super_lig' and (v_room.super_lig_era='mixed' or q.era=v_room.super_lig_era) and not (q.id=any(v_exclude));
-  if v_available<v_room.question_count then v_exclude:='{}'; end if;
+  while v_available<v_room.question_count and cardinality(v_exclude)>0 loop
+    v_exclude:=v_exclude[1:greatest(0,cardinality(v_exclude)-10)];
+    select count(*) into v_available from public.quiz_questions q where q.active and q.game_type='super_lig' and (v_room.super_lig_era='mixed' or q.era=v_room.super_lig_era) and not (q.id=any(v_exclude));
+  end loop;
   select count(*) into v_available from public.quiz_questions q where q.active and q.game_type='super_lig' and (v_room.super_lig_era='mixed' or q.era=v_room.super_lig_era); if v_available<v_room.question_count then raise exception 'NOT_ENOUGH_QUESTIONS'; end if;
   delete from public.quiz_answers a using public.quiz_rounds r where a.round_id=r.id and r.room_id=p_room; delete from public.quiz_rounds where room_id=p_room; delete from public.quiz_room_questions where room_id=p_room; update public.quiz_players set score=0,correct_count=0 where room_id=p_room;
   insert into public.quiz_room_questions(room_id,position,question_id) select p_room,row_number() over ()::smallint,id from (select q.id from public.quiz_questions q where q.active and q.game_type='super_lig' and (v_room.super_lig_era='mixed' or q.era=v_room.super_lig_era) and not (q.id=any(v_exclude)) order by q.usage_count asc,random() limit v_room.question_count) picked;
