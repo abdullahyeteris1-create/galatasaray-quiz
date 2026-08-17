@@ -20,11 +20,12 @@ async function rpcVoid(name: string, args: Record<string, unknown>) {
 }
 
 export function createSuperLigRoom(name: string, era: SuperLigEra, questionCount: number, excludeQuestionIds: string[] = []) {
-  return rpc<SuperLigCredentials>("quiz_super_lig_create_room_v2", {
+  const ids = excludeQuestionIds.slice(-50).map(Number).filter((id) => Number.isSafeInteger(id) && id > 0);
+  return rpc<SuperLigCredentials>("quiz_super_lig_create_room_v3", {
     p_name: name,
     p_era: era,
     p_question_count: questionCount,
-    p_exclude_question_ids: excludeQuestionIds.slice(-50),
+    p_exclude_question_ids: ids,
   });
 }
 
