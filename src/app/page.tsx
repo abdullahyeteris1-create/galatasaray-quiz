@@ -1,5 +1,5 @@
-import { QuizApp } from "@/components/quiz/QuizApp";
+import { GameSelectionScreen } from "@/components/GameSelectionScreen";
 
 export default function Home() {
-  return <QuizApp />;
+  return <GameSelectionScreen />;
 }

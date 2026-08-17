@@ -20,7 +20,7 @@ export function ArenaShell({ children, compact = false }: ArenaShellProps) {
   );
 }
 
-function SoundControl() {
+export function SoundControl() {
   const { enabled, toggle } = useAudioPreference();
 
   return (
