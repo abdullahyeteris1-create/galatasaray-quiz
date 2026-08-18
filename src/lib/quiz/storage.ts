@@ -1,44 +1,23 @@
 import type { QuizSession } from "./types";
+import {
+  createMultiplayerSessionStorage,
+  credentialsToMultiplayerSession,
+} from "@/lib/multiplayer-quiz/storage";
 
 export const SESSION_STORAGE_KEY = "gs_quiz_session";
 
-function isQuizSession(value: unknown): value is QuizSession {
-  if (!value || typeof value !== "object") return false;
-
-  const session = value as Partial<QuizSession>;
-  return session.version === 1 && [session.roomId, session.playerId, session.token, session.code].every(
-    (item) => typeof item === "string" && item.length > 0,
-  );
-}
+const sessionStorage = createMultiplayerSessionStorage<QuizSession>(SESSION_STORAGE_KEY);
 
 export function loadSession(): QuizSession | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const stored = window.localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!stored) return null;
-
-    const parsed: unknown = JSON.parse(stored);
-    if (!isQuizSession(parsed)) {
-      clearSession();
-      return null;
-    }
-
-    return parsed;
-  } catch {
-    clearSession();
-    return null;
-  }
+  return sessionStorage.load();
 }
 
 export function saveSession(session: QuizSession): void {
-  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  sessionStorage.save(session);
 }
 
 export function clearSession(): void {
-  if (typeof window !== "undefined") {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY);
-  }
+  sessionStorage.clear();
 }
 
 export function credentialsToSession(credentials: {
@@ -47,11 +26,5 @@ export function credentialsToSession(credentials: {
   token: string;
   code: string;
 }): QuizSession {
-  return {
-    version: 1,
-    roomId: credentials.room_id,
-    playerId: credentials.player_id,
-    token: credentials.token,
-    code: credentials.code,
-  };
+  return credentialsToMultiplayerSession<QuizSession>(credentials);
 }

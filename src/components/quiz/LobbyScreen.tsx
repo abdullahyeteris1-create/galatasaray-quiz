@@ -59,7 +59,7 @@ export function LobbyScreen({
           {isHost ? (
             <>
               <p>En az iki oyuncu önerilir. Hazır olduğunda arenayı başlat.</p>
-              <ActionButton onClick={onStart} disabled={starting}>
+              <ActionButton onClick={onStart} disabled={starting || players.length < 2}>
                 {starting ? "Oyun başlatılıyor…" : "Oyunu Başlat"}
               </ActionButton>
             </>
@@ -74,4 +74,3 @@ export function LobbyScreen({
     </ArenaShell>
   );
 }
-

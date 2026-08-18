@@ -4,6 +4,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   ROOM_ALREADY_STARTED: "Oyun zaten başladı.",
   NAME_TAKEN: "Bu isim odada kullanılıyor.",
   ROOM_EXPIRED: "Odanın süresi dolmuş.",
+  INVALID_CAPACITY: "Oyuncu kapasitesi 2 ile 12 arasında olmalı.",
+  NEED_AT_LEAST_2_PLAYERS: "Oyunu başlatmak için en az 2 oyuncu gerekli.",
+  NEED_EXACTLY_2_PLAYERS: "Oyunu başlatmak için tam 2 oyuncu gerekli.",
   HOST_ONLY: "Bu işlemi yalnızca oda sahibi yapabilir.",
   ALREADY_ANSWERED: "Bu soru için cevabın zaten alındı.",
   ROUND_CLOSED: "Bu soru artık cevap kabul etmiyor.",
@@ -48,4 +51,3 @@ export function isInvalidSessionError(error: unknown): boolean {
   const code = getQuizErrorCode(error);
   return code ? INVALID_SESSION_ERRORS.has(code) : false;
 }
-

@@ -1,64 +1,539 @@
 "use client";
-/* eslint-disable react-hooks/purity, react-hooks/exhaustive-deps */
 
-import { useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ActionButton, ErrorNotice, SoundControl } from "../quiz/primitives";
-import { getAudioManager } from "@/lib/audio/audioManager";
-import { isInvalidSessionError, mapQuizError } from "@/lib/quiz/errors";
-import { toTimestamp } from "@/lib/quiz/time";
-import { answerSuperLig, createSuperLigRoom, getSuperLigState, joinSuperLigRoom, startSuperLigGame, tickSuperLig } from "@/lib/super-lig/api";
-import { addRecentSuperLigQuestionIds, clearSuperLigSession, credentialsToSuperLigSession, getRecentSuperLigQuestionIds, loadSuperLigSession, saveSuperLigSession } from "@/lib/super-lig/storage";
-import type { SuperLigEra, SuperLigSession, SuperLigState } from "@/lib/super-lig/types";
 
-const audio = getAudioManager();
-const labels = ["A", "B", "C", "D"];
+import { useMultiplayerQuiz } from "@/components/multiplayer-quiz/useMultiplayerQuiz";
+import { ActionButton, ErrorNotice, SoundControl } from "@/components/quiz/primitives";
+import { toTimestamp } from "@/lib/quiz/time";
+import {
+  answerSuperLig,
+  createSuperLigRoom,
+  getSuperLigState,
+  joinSuperLigRoom,
+  startSuperLigGame,
+  tickSuperLig,
+} from "@/lib/super-lig/api";
+import {
+  addRecentSuperLigQuestionIds,
+  clearSuperLigSession,
+  credentialsToSuperLigSession,
+  getRecentSuperLigQuestionIds,
+  loadSuperLigSession,
+  saveSuperLigSession,
+} from "@/lib/super-lig/storage";
+import type {
+  SuperLigEra,
+  SuperLigPlayer,
+  SuperLigSession,
+  SuperLigState,
+} from "@/lib/super-lig/types";
+
+const OPTION_LABELS = ["A", "B", "C", "D"];
+const PLAYER_OPTIONS = [6, 8, 10, 12];
+const QUESTION_OPTIONS = [10, 15, 20];
+const ERA_OPTIONS: SuperLigEra[] = ["mixed", "2000s", "2010s", "2020s"];
+
+const superLigLifecycleConfig = {
+  sessionStore: {
+    clear: clearSuperLigSession,
+    load: loadSuperLigSession,
+    save: saveSuperLigSession,
+  },
+  getState: getSuperLigState,
+  hostTick: tickSuperLig,
+  startGame: startSuperLigGame,
+  answerQuestion: answerSuperLig,
+  revealStoragePrefix: "super_lig_quiz_reveal_played",
+  onReveal: (state: SuperLigState) => {
+    if (state.round) addRecentSuperLigQuestionIds([String(state.round.question_id)]);
+  },
+};
 
 export function SuperLigApp() {
   const router = useRouter();
-  const [screen, setScreen] = useState<"home" | "create" | "join" | "session">("home");
-  const [session, setSession] = useState<SuperLigSession | null>(null);
-  const [state, setState] = useState<SuperLigState | null>(null);
-  const [offset, setOffset] = useState(0);
-  const [booting, setBooting] = useState(true);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const flow = useMultiplayerQuiz<SuperLigState, SuperLigSession>(superLigLifecycleConfig);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState(8);
   const [era, setEra] = useState<SuperLigEra>("mixed");
   const [questionCount, setQuestionCount] = useState(10);
-  const [selected, setSelected] = useState<Record<string, number>>({});
-  const locks = useRef(new Set<string>());
-  const recordedRounds = useRef(new Set<string>());
 
-  const reset = (next: "home" | "create" = "home") => { clearSuperLigSession(); setSession(null); setState(null); setSelected({}); locks.current.clear(); setError(null); setScreen(next); };
+  async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleanName = name.trim();
+    if (!cleanName) return;
 
-  useEffect(() => {
-    const stored = loadSuperLigSession();
-    if (!stored) { queueMicrotask(() => setBooting(false)); return; }
-    getSuperLigState(stored.roomId, stored.playerId, stored.token).then((synced) => { setSession(stored); setState(synced.state); setOffset(synced.serverOffsetMs); setScreen("session"); }).catch((e) => { if (isInvalidSessionError(e)) clearSuperLigSession(); }).finally(() => queueMicrotask(() => setBooting(false)));
-  }, []);
+    await flow.enterSession(
+      async () => credentialsToSuperLigSession(await createSuperLigRoom(
+        cleanName,
+        maxPlayers,
+        era,
+        questionCount,
+        getRecentSuperLigQuestionIds(),
+      )),
+      "Oda oluşturulamadı. Lütfen tekrar dene.",
+    );
+  }
 
-  useEffect(() => { if (!session || booting) return; let stop = false; let timer: number | undefined; const poll = async () => { try { const s = await getSuperLigState(session.roomId, session.playerId, session.token); if (!stop) { setState(s.state); setOffset(s.serverOffsetMs); setError(null); if (s.state.room.status !== "finished") timer = window.setTimeout(poll, s.state.room.status === "waiting" ? 1000 : 500); } } catch (e) { if (!stop) { setError(isInvalidSessionError(e) ? "Oturum sona erdi." : "Bağlantı zayıf, yeniden deneniyor…"); timer = window.setTimeout(poll, 1500); } } }; void poll(); return () => { stop = true; if (timer) window.clearTimeout(timer); }; }, [session, booting]);
-  useEffect(() => { if (!session || !state || state.room.status !== "playing" || state.room.host_player_id !== session.playerId) return; let stop = false; const tick = async () => { try { await tickSuperLig(session.roomId, session.playerId, session.token); } finally { if (!stop) window.setTimeout(tick, 700); } }; void tick(); return () => { stop = true; }; }, [session, state?.room.status, state?.room.host_player_id]);
-  useEffect(() => { audio.setLobbyActive(screen !== "session" || state?.room.status === "waiting"); }, [screen, state?.room.status]);
-  useEffect(() => { const round = state?.round; if (!round || !state.reveal || recordedRounds.current.has(round.id)) return; recordedRounds.current.add(round.id); addRecentSuperLigQuestionIds([String(round.question_id)]); }, [state?.reveal, state?.round]);
+  async function handleJoin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleanName = name.trim();
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanName || cleanCode.length !== 6) return;
 
-  async function open(credentials: SuperLigSession) { saveSuperLigSession(credentials); setSession(credentials); setScreen("session"); try { const s = await getSuperLigState(credentials.roomId, credentials.playerId, credentials.token); setState(s.state); setOffset(s.serverOffsetMs); } catch (e) { setError(mapQuizError(e)); } }
-  async function create() { if (!name.trim()) return; audio.activate(); setPending(true); setError(null); try { await open(credentialsToSuperLigSession(await createSuperLigRoom(name.trim(), era, questionCount, getRecentSuperLigQuestionIds()))); } catch (e) { setError(mapQuizError(e, "Oda oluşturulamadı.")); } finally { setPending(false); } }
-  async function join() { if (!name.trim() || code.trim().length !== 6) return; audio.activate(); setPending(true); setError(null); try { await open(credentialsToSuperLigSession(await joinSuperLigRoom(code.trim(), name.trim()))); } catch (e) { setError(mapQuizError(e, "Odaya katılınamadı.")); } finally { setPending(false); } }
-  async function start() { if (!session) return; audio.activate(); try { await startSuperLigGame(session.roomId, session.playerId, session.token); } catch (e) { setError(mapQuizError(e, "Oyun başlatılamadı.")); } }
-  async function answer(option: number) { const round = state?.round; if (!session || !round || round.answered || locks.current.has(round.id)) return; locks.current.add(round.id); try { await answerSuperLig(session.roomId, round.id, session.playerId, session.token, option); setSelected((v) => ({ ...v, [round.id]: option })); } catch (e) { locks.current.delete(round.id); setError(mapQuizError(e)); } }
+    await flow.enterSession(
+      async () => credentialsToSuperLigSession(await joinSuperLigRoom(cleanCode, cleanName)),
+      "Odaya katılınamadı. Lütfen bilgileri kontrol et.",
+    );
+  }
 
-  if (booting) return <main className="super-lig-shell"><div className="super-lig-phone"><p>Super Lig arenası hazırlanıyor…</p></div></main>;
-  if (screen === "home") return <Shell><div className="super-lig-home"><p className="super-lig-kicker">TÜRKİYE’NİN FUTBOL ARENASI</p><h1>Super Lig<br /><span>Düello</span></h1><p>İki oyuncu, tek saha. Futbol bilgisini ve hızını kanıtla.</p><ActionButton className="super-lig-primary" onClick={() => { audio.activate(); setScreen("create"); }}>Oda Oluştur</ActionButton><ActionButton tone="ghost" className="super-lig-secondary" onClick={() => { audio.activate(); setScreen("join"); }}>Odaya Katıl</ActionButton><button className="super-lig-menu" onClick={() => router.push("/")}>← Oyun seçimine dön</button></div></Shell>;
-  if (screen === "create" || screen === "join") return <Shell><div className="super-lig-form"><button className="super-lig-back" onClick={() => setScreen("home")}>← Geri</button><p className="super-lig-kicker">{screen === "create" ? "YENİ DÜELLO" : "ARENA'YA KATIL"}</p><h1>{screen === "create" ? "Oda Oluştur" : "Odaya Katıl"}</h1><ErrorNotice message={error} /><label>Oyuncu adı<input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} /></label>{screen === "join" && <label>Oda kodu<input value={code} maxLength={6} onChange={(e) => setCode(e.target.value.toUpperCase())} /></label>}{screen === "create" && <><fieldset><legend>Dönem</legend>{(["mixed", "2000s", "2010s", "2020s"] as SuperLigEra[]).map((v) => <button key={v} type="button" className={era === v ? "chosen" : ""} onClick={() => setEra(v)}>{v === "mixed" ? "Karışık" : v}</button>)}</fieldset><fieldset><legend>Soru sayısı</legend>{[10, 15, 20].map((v) => <button key={v} type="button" className={questionCount === v ? "chosen" : ""} onClick={() => setQuestionCount(v)}>{v}</button>)}</fieldset></>}<ActionButton disabled={pending || !name.trim() || (screen === "join" && code.length !== 6)} onClick={screen === "create" ? create : join}>{pending ? "Hazırlanıyor…" : screen === "create" ? "Düelloyu Başlat" : "Katıl"}</ActionButton></div></Shell>;
-  if (!session || !state) return <Shell><p>Odaya bağlanılıyor…</p></Shell>;
-  if (state.room.status === "waiting") return <Shell><div className="super-lig-lobby"><p className="super-lig-kicker">ODA {state.room.code}</p><h1>Rakibin bekleniyor</h1><p>{state.players.length}/2 oyuncu hazır</p>{state.players.map((p) => <div className="super-lig-player" key={p.id}>{p.name}{p.is_host ? " · HOST" : ""}</div>)}<ErrorNotice message={error} />{state.room.host_player_id === session.playerId && <ActionButton disabled={state.players.length < 2} onClick={start}>Düelloyu başlat</ActionButton>}</div></Shell>;
-  if (state.room.status === "finished") { const winner = [...state.players].sort((a, b) => b.score - a.score)[0]; return <Shell><div className="super-lig-final"><p className="super-lig-kicker">MAÇ BİTTİ</p><h1>{winner?.name ?? "Kazanan"}</h1><p>{winner?.score ?? 0} puan ile düelloyu kazandı.</p><ActionButton onClick={() => reset("create")}>Tekrar Oyna</ActionButton><ActionButton tone="ghost" onClick={() => reset("create")}>Yeni Oda</ActionButton><button className="super-lig-menu" onClick={() => router.push("/")}>Oyun seçimine dön</button></div></Shell>; }
-  return <Game state={state} offset={offset} selected={state.round ? selected[state.round.id] ?? null : null} onAnswer={answer} />;
+  if (flow.booting) return <Loading label="Oturum kontrol ediliyor…" />;
+
+  if (flow.screen === "home") {
+    return (
+      <Shell>
+        <div className="super-lig-home">
+          <p className="super-lig-kicker">TÜRKİYE’NİN FUTBOL ARENASI</p>
+          <h1>Süper Lig<br /><span>Düello</span></h1>
+          <p>2–12 oyuncu, tek saha. Futbol bilgini ve hızını kanıtla.</p>
+          <ActionButton className="super-lig-primary" onClick={() => flow.navigateTo("create")}>
+            Oda Oluştur
+          </ActionButton>
+          <ActionButton
+            tone="ghost"
+            className="super-lig-secondary"
+            onClick={() => flow.navigateTo("join")}
+          >
+            Odaya Katıl
+          </ActionButton>
+          <button className="super-lig-menu" onClick={() => router.push("/")}>
+            ← Oyun seçimine dön
+          </button>
+        </div>
+      </Shell>
+    );
+  }
+
+  if (flow.screen === "create" || flow.screen === "join") {
+    const creating = flow.screen === "create";
+    return (
+      <Shell>
+        <form className="super-lig-form" onSubmit={creating ? handleCreate : handleJoin}>
+          <button type="button" className="super-lig-back" onClick={() => flow.navigateTo("home")}>
+            ← Geri
+          </button>
+          <p className="super-lig-kicker">{creating ? "YENİ ARENA" : "ARENA’YA KATIL"}</p>
+          <h1>{creating ? "Oda Oluştur" : "Odaya Katıl"}</h1>
+          <ErrorNotice message={flow.actionError} />
+
+          <label>
+            Oyuncu adı
+            <input
+              autoComplete="nickname"
+              maxLength={24}
+              value={name}
+              disabled={flow.pending}
+              onChange={(event) => setName(event.target.value)}
+              required
+            />
+          </label>
+
+          {!creating && (
+            <label>
+              Oda kodu
+              <input
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={6}
+                value={code}
+                disabled={flow.pending}
+                onChange={(event) => setCode(event.target.value.toUpperCase().replace(/\s/g, ""))}
+                required
+              />
+            </label>
+          )}
+
+          {creating && (
+            <>
+              <ChoiceField
+                legend="Maksimum oyuncu"
+                options={PLAYER_OPTIONS}
+                selected={maxPlayers}
+                disabled={flow.pending}
+                onSelect={setMaxPlayers}
+              />
+              <ChoiceField
+                legend="Dönem"
+                options={ERA_OPTIONS}
+                selected={era}
+                disabled={flow.pending}
+                label={(value) => value === "mixed" ? "Karışık" : value}
+                onSelect={setEra}
+              />
+              <ChoiceField
+                legend="Soru sayısı"
+                options={QUESTION_OPTIONS}
+                selected={questionCount}
+                disabled={flow.pending}
+                onSelect={setQuestionCount}
+              />
+            </>
+          )}
+
+          <ActionButton
+            type="submit"
+            disabled={flow.pending || !name.trim() || (!creating && code.trim().length !== 6)}
+          >
+            {flow.pending ? "Hazırlanıyor…" : creating ? "Odayı Oluştur" : "Katıl"}
+          </ActionButton>
+        </form>
+      </Shell>
+    );
+  }
+
+  if (!flow.session || !flow.state) {
+    return <Loading label={flow.connectionError ?? "Odaya bağlanılıyor…"} />;
+  }
+
+  if (flow.state.room.status === "finished") {
+    return (
+      <SuperLigFinal
+        players={flow.state.players}
+        currentPlayerId={flow.session.playerId}
+        onHome={() => flow.resetTo("home")}
+        onCreate={() => flow.resetTo("create")}
+        onMenu={() => router.push("/")}
+      />
+    );
+  }
+
+  if (flow.state.room.status === "waiting") {
+    const isHost = flow.state.room.host_player_id === flow.session.playerId;
+    return (
+      <Shell>
+        <div className="super-lig-lobby">
+          <p className="super-lig-kicker">BEKLEME ODASI</p>
+          <h1>Oyuncular Hazır mı?</h1>
+          <section className="super-lig-room-code">
+            <span>ODA KODU</span>
+            <strong>{flow.state.room.code}</strong>
+          </section>
+          <div className="super-lig-lobby-heading">
+            <strong>Oyuncular</strong>
+            <span>{flow.state.players.length} / {flow.state.room.max_players}</span>
+          </div>
+          <div className="super-lig-player-list">
+            {flow.state.players.map((player) => (
+              <div
+                className={"super-lig-player " + (player.id === flow.session?.playerId ? "current-player" : "")}
+                key={player.id}
+              >
+                <span>{player.name}</span>
+                {player.id === flow.session?.playerId && <small>SEN</small>}
+                {player.is_host ? <strong>ODA SAHİBİ</strong> : <strong>✓ HAZIR</strong>}
+              </div>
+            ))}
+          </div>
+          <ErrorNotice message={flow.actionError ?? flow.connectionError} />
+          {isHost ? (
+            <ActionButton
+              disabled={flow.starting || flow.state.players.length < 2}
+              onClick={flow.startGame}
+            >
+              {flow.starting ? "Maç başlatılıyor…" : "Maçı Başlat"}
+            </ActionButton>
+          ) : (
+            <p className="super-lig-status">Oda sahibinin maçı başlatması bekleniyor…</p>
+          )}
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <SuperLigGame
+      state={flow.state}
+      currentPlayerId={flow.session.playerId}
+      serverOffsetMs={flow.serverOffsetMs}
+      selectedOption={flow.selectedOption}
+      submitting={flow.submitting}
+      error={flow.actionError ?? flow.connectionError}
+      onAnswer={flow.answerQuestion}
+    />
+  );
 }
 
-function Shell({ children }: { children: ReactNode }) { return <main className="super-lig-shell"><div className="super-lig-phone"><SoundControl />{children}</div></main>; }
-function Game({ state, offset, selected, onAnswer }: { state: SuperLigState; offset: number; selected: number | null; onAnswer: (n: number) => Promise<void> }) { const [, rerender] = useState(0); useEffect(() => { const i = window.setInterval(() => rerender((n) => n + 1), 200); return () => window.clearInterval(i); }, []); const round = state.round; if (!round) return <Shell><p>İlk tur hazırlanıyor…</p></Shell>; const now = Date.now() + offset; const left = Math.max(0, Math.ceil((toTimestamp(round.ends_at) - now) / 1000)); if (state.reveal) return <Shell><div className="super-lig-reveal"><p className="super-lig-kicker">TUR {round.number} SONUCU</p><h1>{state.reveal.winner_id ? "Tur tamamlandı" : "Berabere"}</h1><p>Doğru cevap: <strong>{labels[state.reveal.correct_option]}</strong></p><p>{state.reveal.explanation}</p>{state.reveal.answers.map((a) => <div className="super-lig-answer-result" key={a.player_id}>{a.is_correct ? "✓" : "–"} {a.response_ms ? `${(a.response_ms / 1000).toFixed(2)} sn` : "Cevap yok"}</div>)}</div></Shell>; return <Shell><div className="super-lig-game"><header><span>TUR {round.number} / {state.room.question_count}</span><strong className={left <= 5 ? "urgent" : ""}>{left}s</strong></header><div className="super-lig-progress"><i style={{ width: `${(left / 15) * 100}%` }} /></div><p className="super-lig-category">{round.category} · {round.difficulty}</p><h1>{round.question}</h1><div className="super-lig-answer-grid">{round.options.map((option, i) => <button key={option} className={selected === i ? "chosen" : ""} disabled={round.answered || left === 0} onClick={() => onAnswer(i)}><b>{labels[i]}</b>{option}</button>)}</div>{selected !== null && <p className="super-lig-status">Cevabın alındı. Rakibin bekleniyor.</p>}</div></Shell>; }
+function ChoiceField<Value extends string | number>({
+  legend,
+  options,
+  selected,
+  disabled,
+  label = String,
+  onSelect,
+}: {
+  legend: string;
+  options: readonly Value[];
+  selected: Value;
+  disabled: boolean;
+  label?: (value: Value) => string;
+  onSelect: (value: Value) => void;
+}) {
+  return (
+    <fieldset>
+      <legend>{legend}</legend>
+      {options.map((value) => (
+        <button
+          key={value}
+          type="button"
+          className={selected === value ? "chosen" : ""}
+          aria-pressed={selected === value}
+          disabled={disabled}
+          onClick={() => onSelect(value)}
+        >
+          {label(value)}
+        </button>
+      ))}
+    </fieldset>
+  );
+}
+
+function Shell({ children }: { children: ReactNode }) {
+  return (
+    <main className="super-lig-shell">
+      <div className="super-lig-phone">
+        <SoundControl />
+        {children}
+      </div>
+    </main>
+  );
+}
+
+function Loading({ label }: { label: string }) {
+  return (
+    <Shell>
+      <div className="super-lig-loading" role="status" aria-live="polite">
+        <span className="super-lig-stadium-mark" aria-hidden="true">⚽</span>
+        <p>{label}</p>
+      </div>
+    </Shell>
+  );
+}
+
+function SuperLigGame({
+  state,
+  currentPlayerId,
+  serverOffsetMs,
+  selectedOption,
+  submitting,
+  error,
+  onAnswer,
+}: {
+  state: SuperLigState;
+  currentPlayerId: string;
+  serverOffsetMs: number;
+  selectedOption: number | null;
+  submitting: boolean;
+  error: string | null;
+  onAnswer: (option: number) => Promise<void>;
+}) {
+  const [clock, setClock] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(Date.now()), 200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const round = state.round;
+  const timing = useMemo(() => {
+    if (!round) {
+      return { beforeStart: true, startIn: 3, showStart: false, secondsLeft: 0, expired: false };
+    }
+    const now = clock + serverOffsetMs;
+    const startDelta = toTimestamp(round.starts_at) - now;
+    const endDelta = toTimestamp(round.ends_at) - now;
+    return {
+      beforeStart: startDelta > 0,
+      startIn: Math.max(1, Math.min(3, Math.ceil(startDelta / 1000))),
+      showStart: startDelta <= 0 && startDelta > -700,
+      secondsLeft: Math.max(0, Math.ceil(endDelta / 1000)),
+      expired: endDelta <= 0,
+    };
+  }, [clock, round, serverOffsetMs]);
+
+  if (!round) return <Loading label="İlk soru hazırlanıyor…" />;
+
+  if (state.reveal) {
+    return (
+      <SuperLigReveal
+        state={state}
+        currentPlayerId={currentPlayerId}
+        selectedOption={selectedOption}
+      />
+    );
+  }
+
+  const answered = round.answered || selectedOption !== null;
+  const locked = answered || submitting || timing.beforeStart || timing.expired;
+  const progress = Math.min(100, Math.max(0, (timing.secondsLeft / 15) * 100));
+
+  return (
+    <Shell>
+      <div className="super-lig-game">
+        <header>
+          <span>TUR {round.number} / {state.room.question_count}</span>
+          <strong className={timing.secondsLeft <= 5 ? "urgent" : ""}>
+            {timing.secondsLeft}s
+          </strong>
+        </header>
+        <div className="super-lig-progress" aria-hidden="true">
+          <i style={{ width: `${progress}%` }} />
+        </div>
+        <p className="super-lig-category">{round.category} · {round.difficulty}</p>
+        <h1>{round.question}</h1>
+        <ErrorNotice message={error} />
+        <div className="super-lig-answer-grid">
+          {round.options.map((option, index) => (
+            <button
+              key={`${round.id}-${index}`}
+              type="button"
+              className={selectedOption === index ? "chosen" : ""}
+              disabled={locked}
+              onClick={() => onAnswer(index)}
+            >
+              <b>{OPTION_LABELS[index]}</b>
+              {option}
+            </button>
+          ))}
+        </div>
+        <div className="super-lig-status" aria-live="polite">
+          {submitting && <p>Cevabın gönderiliyor…</p>}
+          {answered && !submitting && <p>✓ Cevabın alındı. Diğer oyuncular bekleniyor.</p>}
+          {timing.expired && !answered && <p>Süre doldu. Tur sonucu bekleniyor.</p>}
+        </div>
+        {(timing.beforeStart || timing.showStart) && (
+          <div className="super-lig-countdown" role="status" aria-live="assertive">
+            <p>HAZIR OL</p>
+            <strong>{timing.beforeStart ? timing.startIn : "BAŞLA!"}</strong>
+          </div>
+        )}
+      </div>
+    </Shell>
+  );
+}
+
+function SuperLigReveal({
+  state,
+  currentPlayerId,
+  selectedOption,
+}: {
+  state: SuperLigState;
+  currentPlayerId: string;
+  selectedOption: number | null;
+}) {
+  const round = state.round;
+  const reveal = state.reveal;
+  if (!round || !reveal) return <Loading label="Tur sonucu hazırlanıyor…" />;
+
+  const leaderboard = sortPlayers(state.players);
+  const winner = state.players.find((player) => player.id === reveal.winner_id);
+  const isCorrect = selectedOption === reveal.correct_option;
+
+  return (
+    <Shell>
+      <div className="super-lig-reveal" aria-live="polite">
+        <p className="super-lig-kicker">TUR {round.number} SONUCU</p>
+        <h1>{winner ? `${winner.name} turu kazandı` : "Bu turda puan yok"}</h1>
+        <p className={isCorrect ? "super-lig-result-correct" : ""}>
+          Doğru cevap: <strong>{OPTION_LABELS[reveal.correct_option]}</strong>
+        </p>
+        <div className="super-lig-reveal-options">
+          {round.options.map((option, index) => (
+            <div
+              key={`${round.id}-${index}`}
+              className={
+                index === reveal.correct_option
+                  ? "correct"
+                  : index === selectedOption
+                    ? "wrong"
+                    : ""
+              }
+            >
+              <b>{OPTION_LABELS[index]}</b>
+              <span>{option}</span>
+            </div>
+          ))}
+        </div>
+        <p>{reveal.explanation}</p>
+        <ol className={`super-lig-scoreboard ${leaderboard.length === 2 ? "two-player" : ""}`}>
+          {leaderboard.map((player, index) => {
+            const answer = reveal.answers.find((item) => item.player_id === player.id);
+            return (
+              <li key={player.id} className={player.id === currentPlayerId ? "current-player" : ""}>
+                <span>{index + 1}</span>
+                <strong>{player.name}{player.id === currentPlayerId ? " · SEN" : ""}</strong>
+                <small>
+                  {!answer ? "Cevap yok" : answer.is_correct
+                    ? `✓ ${(answer.response_ms / 1000).toFixed(2)} sn`
+                    : "Yanlış"}
+                </small>
+                <b>{player.score}</b>
+              </li>
+            );
+          })}
+        </ol>
+        <p className="super-lig-next-round">Sonraki soru hazırlanıyor…</p>
+      </div>
+    </Shell>
+  );
+}
+
+function SuperLigFinal({
+  players,
+  currentPlayerId,
+  onHome,
+  onCreate,
+  onMenu,
+}: {
+  players: SuperLigPlayer[];
+  currentPlayerId: string;
+  onHome: () => void;
+  onCreate: () => void;
+  onMenu: () => void;
+}) {
+  const leaderboard = sortPlayers(players);
+  const winner = leaderboard[0];
+
+  return (
+    <Shell>
+      <div className="super-lig-final">
+        <p className="super-lig-kicker">MAÇ BİTTİ</p>
+        <h1>{winner?.name ?? "Şampiyon"}</h1>
+        <p>{winner?.score ?? 0} puan ile arenayı tamamladı.</p>
+        <ol className="super-lig-scoreboard">
+          {leaderboard.map((player, index) => (
+            <li key={player.id} className={player.id === currentPlayerId ? "current-player" : ""}>
+              <span>{index + 1}</span>
+              <strong>{player.name}{player.id === currentPlayerId ? " · SEN" : ""}</strong>
+              <small>{player.correct} doğru</small>
+              <b>{player.score}</b>
+            </li>
+          ))}
+        </ol>
+        <ActionButton onClick={onCreate}>Yeni Oda Kur</ActionButton>
+        <ActionButton tone="ghost" className="super-lig-secondary" onClick={onHome}>
+          Ana Sayfa
+        </ActionButton>
+        <button className="super-lig-menu" onClick={onMenu}>Oyun seçimine dön</button>
+      </div>
+    </Shell>
+  );
+}
+
+function sortPlayers(players: SuperLigPlayer[]) {
+  return [...players].sort(
+    (a, b) => b.score - a.score || b.correct - a.correct || a.name.localeCompare(b.name, "tr"),
+  );
+}
