@@ -1,0 +1,271 @@
+import { writeFile } from "node:fs/promises";
+import path from "node:path";
+
+const OUTPUT = path.join(import.meta.dirname, "question_candidates_anadolu_hard_batch_02.json");
+
+const S = {
+  hakanOzmert: "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30",
+  youla: "https://www.tff.org/Default.aspx?kisiID=29807&pageID=30",
+  sezerBadur: "https://www.tff.org/Default.aspx?kisiId=30033&pageId=30",
+  sezerBadurStats: "https://www.mackolik.com/futbolcu/sezer-badur/9sf255sgjxb1kwsd6idrfxi39",
+  musaAydin: "https://www.tff.org/default.aspx?ftxtID=3146&pageID=286",
+  ersenMartin: "https://www.tff.org/Default.aspx?kisiID=29567&pageID=30",
+  mustafaSarp: "https://www.tff.org/Default.aspx?kisiID=468569&pageID=399",
+  serdarOzkan: "https://www.tff.org/Default.aspx?kisiID=678886&pageId=30",
+  mehmetPolat: "https://www.tff.org/Default.aspx?kisiId=27110&pageId=30",
+  mehmetPolatInterview: "https://www.tff.org/default.aspx?ftxtID=5038&pageID=286",
+  mehmetNas: "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+  gurayVural: "https://www.tff.org/Default.aspx?kisiId=431299&pageId=526",
+  omerSismanoglu: "https://www.tff.org/Default.aspx?kisiID=1252882&pageId=30",
+  isaacTita: "https://www.tff.org/default.aspx?ftxtID=17195&pageID=201",
+  yektaKurtulus: "https://www.tff.org/Default.aspx?kisiId=304236&pageId=30",
+  aliTandogan: "https://www.tff.org/Default.aspx?kisiID=27441&pageID=30",
+  aykutDemir: "https://www.tff.org/Default.aspx?kisiId=1063466&pageId=30",
+  sedatAgcay: "https://www.tff.org/Default.aspx?kisiID=370938&pageID=30",
+  orhanAk: "https://www.tff.org/Default.aspx?kisiID=27671&pageID=30",
+  mehmetGuven: "https://www.tff.org/Default.aspx?kisiID=663117&pageID=30",
+  transfer2015Summer: "https://www.tff.org/Resources/Tamsaha/131/files/assets/basic-html/page28.html",
+  transfer2015Winter: "https://www.tff.org/Resources/Tamsaha/124/files/assets/basic-html/page27.html",
+  mersinRiza: "https://www.tff.org/default.aspx?ftxtID=21732&pageID=201",
+  scorer2011: "https://www.tff.org/Resources/TFF/Documents/002011/Ligler/SuperLig/almanak2011-12/2010-11-Super-Lig-Almanak.pdf",
+};
+
+const ortaIds = new Set([2, 4, 24]);
+const efsaneIds = new Set([3, 7, 8, 14, 16, 17, 18]);
+const difficultyFor = (id) => ortaIds.has(id) ? "orta" : efsaneIds.has(id) ? "efsane" : "zor";
+
+const raw = [
+  {
+    q: "Hangi futbolcu hem Kardemir Karabükspor hem de Antalyaspor forması giymiştir?",
+    a: "Hakan Özmert",
+    d: ["Sedat Ağçay", "Yiğit İncedemir", "Kerem Şeras"],
+    era: "2010s", type: "two_club", clubs: ["Kardemir Karabükspor", "Antalyaspor"],
+    players: ["Hakan Özmert", "Sedat Ağçay", "Yiğit İncedemir", "Kerem Şeras"],
+    key: "player-clubs|hakan-ozmert|antalyaspor+karabukspor", src: [S.hakanOzmert],
+    note: "TFF oyuncu hareketleri Hakan Özmert için hem Kardemir Karabükspor hem Antalyaspor kayıtlarını gösteriyor; diğer seçeneklerin yalnızca biriyle bağı var.",
+  },
+  {
+    q: "Hangi futbolcu hem Eskişehirspor hem de Denizlispor forması giymiştir?",
+    a: "Souleymane Youla", d: ["Ümit Karan", "Mehmet Yıldız", "Darryl Roberts"],
+    era: "2000s", type: "two_club", clubs: ["Eskişehirspor", "Denizlispor"],
+    players: ["Souleymane Youla", "Ümit Karan", "Mehmet Yıldız", "Darryl Roberts"],
+    key: "player-clubs|souleymane-youla|denizlispor+eskisehirspor", src: [S.youla],
+    note: "TFF kaydında Youla'nın Eskişehirspor'dan Denizlispor'a geçtiği görülüyor.",
+  },
+  {
+    q: "Hangi futbolcu hem Manisaspor hem de Sakaryaspor forması giymiştir?",
+    a: "Sezer Badur", d: ["Ersen Martin", "Hakan Özmert", "Uğur İnceman"],
+    era: "2000s-2010s", type: "two_club", clubs: ["Manisaspor", "Sakaryaspor"],
+    players: ["Sezer Badur", "Ersen Martin", "Hakan Özmert", "Uğur İnceman"],
+    key: "player-clubs|sezer-badur|manisaspor+sakaryaspor", src: [S.sezerBadur, S.sezerBadurStats],
+    note: "TFF kariyer kaydı iki kulübü de gösteriyor; Maçkolik sezon istatistikleri Manisaspor'da 6, Sakaryaspor'da 17 resmî maça çıktığını doğruluyor.",
+  },
+  {
+    q: "Hangi futbolcu hem Samsunspor hem de Sakaryaspor forması giymiştir?",
+    a: "Musa Aydın", d: ["Serdar Özkan", "Hakan Özmert", "Mehmet Nas"],
+    era: "2000s", type: "two_club", clubs: ["Samsunspor", "Sakaryaspor"],
+    players: ["Musa Aydın", "Serdar Özkan", "Hakan Özmert", "Mehmet Nas"],
+    key: "player-clubs|musa-aydin|sakaryaspor+samsunspor", src: [S.musaAydin],
+    note: "TFF röportajı Musa Aydın'ın Samsunspor altyapısından yetiştiğini ve Sakaryaspor'da oynadığını açıkça belirtiyor.",
+  },
+  {
+    q: "Hangi futbolcu hem Denizlispor hem de Sivasspor forması giymiştir?",
+    a: "Ersen Martin", d: ["Mehmet Yıldız", "Souleymane Youla", "Gökhan Ünal"],
+    era: "2000s", type: "two_club", clubs: ["Denizlispor", "Sivasspor"],
+    players: ["Ersen Martin", "Mehmet Yıldız", "Souleymane Youla", "Gökhan Ünal"],
+    key: "player-clubs|ersen-martin|denizlispor+sivasspor", src: [S.ersenMartin],
+    note: "TFF oyuncu hareketlerinde Ersen Martin'in Denizlispor ve Sivasspor sözleşmeleri birlikte yer alıyor.",
+  },
+  {
+    q: "Hangi futbolcu hem Mersin İdmanyurdu hem de Samsunspor forması giymiştir?",
+    a: "Mustafa Sarp", d: ["Ali Tandoğan", "Mehmet Nas", "Sedat Ağçay"],
+    era: "2000s-2010s", type: "two_club", clubs: ["Mersin İdmanyurdu", "Samsunspor"],
+    players: ["Mustafa Sarp", "Ali Tandoğan", "Mehmet Nas", "Sedat Ağçay"],
+    key: "player-clubs|mustafa-sarp|mersin+samsunspor", src: [S.mustafaSarp],
+    note: "TFF kaydı Mustafa Sarp'ın Mersin İdmanyurdu ve Samsunspor dönemlerini gösteriyor.",
+  },
+  {
+    q: "Hangi futbolcu hem Elazığspor hem de Eskişehirspor forması giymiştir?",
+    a: "Serdar Özkan", d: ["Erkan Zengin", "Sezer Badur", "Hürriyet Gücer"],
+    era: "2010s", type: "two_club", clubs: ["Elazığspor", "Eskişehirspor"],
+    players: ["Serdar Özkan", "Erkan Zengin", "Sezer Badur", "Hürriyet Gücer"],
+    key: "player-clubs|serdar-ozkan|elazigspor+eskisehirspor", src: [S.serdarOzkan],
+    note: "TFF hareketleri Serdar Özkan'ın Elazığspor'dan sonra Eskişehirspor'a geçtiğini doğruluyor.",
+  },
+  {
+    q: "Hangi futbolcu Gaziantepspor, Çaykur Rizespor ve Samsunspor kulüplerinin üçünde de forma giymiştir?",
+    a: "Mehmet Polat", d: ["Mehmet Nas", "Mustafa Sarp", "Murat Ceylan"],
+    era: "2000s", type: "three_club", clubs: ["Gaziantepspor", "Çaykur Rizespor", "Samsunspor"],
+    players: ["Mehmet Polat", "Mehmet Nas", "Mustafa Sarp", "Murat Ceylan"],
+    key: "player-clubs|mehmet-polat|gaziantepspor+rizespor+samsunspor", src: [S.mehmetPolat, S.mehmetPolatInterview],
+    note: "TFF profil ve röportajı Mehmet Polat'ın Gaziantepspor-Rizespor-Samsunspor kariyer üçlüsünü doğruluyor.",
+  },
+  {
+    q: "Hangi futbolcu Samsunspor, Manisaspor ve Sivasspor kulüplerinin üçünde de forma giymiştir?",
+    a: "Mehmet Nas", d: ["Sezer Badur", "Musa Aydın", "Uğur İnceman"],
+    era: "2000s-2010s", type: "three_club", clubs: ["Samsunspor", "Manisaspor", "Sivasspor"],
+    players: ["Mehmet Nas", "Sezer Badur", "Musa Aydın", "Uğur İnceman"],
+    key: "player-clubs|mehmet-nas|manisaspor+samsunspor+sivasspor", src: [S.mehmetNas],
+    note: "TFF kaydında Mehmet Nas için üç kulübün de sözleşme satırları bulunuyor.",
+  },
+  {
+    q: "Hangi futbolcu Denizlispor, Akhisarspor ve Kayserispor kulüplerinin üçünde de forma giymiştir?",
+    a: "Güray Vural", d: ["Bilal Kısa", "Theofanis Gekas", "Mehmet Eren Boyraz"],
+    era: "2010s", type: "three_club", clubs: ["Denizlispor", "Akhisarspor", "Kayserispor"],
+    players: ["Güray Vural", "Bilal Kısa", "Theofanis Gekas", "Mehmet Eren Boyraz"],
+    key: "player-clubs|guray-vural|akhisar+denizli+kayseri", src: [S.gurayVural],
+    note: "TFF oyuncu hareketleri Güray Vural'ın Denizlispor, Akhisarspor ve Kayserispor kayıtlarını birlikte gösteriyor.",
+  },
+  {
+    q: "Hangi futbolcu Kayserispor, Antalyaspor ve Eskişehirspor kulüplerinin üçünde de forma giymiştir?",
+    a: "Ömer Şişmanoğlu", d: ["Necati Ateş", "Mehmet Yıldız", "Gökhan Ünal"],
+    era: "2010s", type: "three_club", clubs: ["Kayserispor", "Antalyaspor", "Eskişehirspor"],
+    players: ["Ömer Şişmanoğlu", "Necati Ateş", "Mehmet Yıldız", "Gökhan Ünal"],
+    key: "player-clubs|omer-sismanoglu|antalya+eskisehir+kayserispor", src: [S.omerSismanoglu],
+    note: "TFF profili Ömer Şişmanoğlu'nun Kayserispor, Antalyaspor ve kiralık Eskişehirspor dönemlerini doğruluyor; Kayseri Erciyesspor ayrı kulüp kabul edildi.",
+  },
+  {
+    q: "Hangi futbolcu Gençlerbirliği, Manisaspor ve Antalyaspor kulüplerinin üçünde de forma giymiştir?",
+    a: "Isaac Promise", d: ["Kahe", "Uğur İnceman", "Souleymane Youla"],
+    era: "2000s-2010s", type: "three_club", clubs: ["Gençlerbirliği", "Manisaspor", "Antalyaspor"],
+    players: ["Isaac Promise", "Kahe", "Uğur İnceman", "Souleymane Youla"],
+    key: "player-clubs|isaac-promise|antalya+genclerbirligi+manisa", src: [S.isaacTita],
+    note: "TFF kariyer yazısı Isaac Promise'ın Gençlerbirliği-Trabzonspor-Manisaspor-Antalyaspor sırasını anlatıyor.",
+  },
+  {
+    q: "Hangi futbolcu Kasımpaşa, Sivasspor ve Antalyaspor kulüplerinin üçünde de forma giymiştir?",
+    a: "Yekta Kurtuluş", d: ["Hakan Arslan", "Serdar Özkan", "Özer Hurmacı"],
+    era: "2010s", type: "three_club", clubs: ["Kasımpaşa", "Sivasspor", "Antalyaspor"],
+    players: ["Yekta Kurtuluş", "Hakan Arslan", "Serdar Özkan", "Özer Hurmacı"],
+    key: "player-clubs|yekta-kurtulus|antalya+kasimpasa+sivas", src: [S.yektaKurtulus],
+    note: "TFF kaydı Yekta Kurtuluş'un Kasımpaşa, Sivasspor ve Antalyaspor sözleşmelerini gösteriyor.",
+  },
+  {
+    q: "Türkiye kariyerinde Denizlispor → Gençlerbirliği → Beşiktaş → Bursaspor rotasına sahip futbolcu kimdir?",
+    a: "Ali Tandoğan", d: ["Ali Güneş", "İbrahim Akın", "Serdar Kurtuluş"],
+    era: "2000s", type: "career", clubs: ["Denizlispor", "Gençlerbirliği", "Beşiktaş", "Bursaspor"],
+    players: ["Ali Tandoğan", "Ali Güneş", "İbrahim Akın", "Serdar Kurtuluş"],
+    key: "career-route|ali-tandogan|denizli>gencler>besiktas>bursa", src: [S.aliTandogan],
+    note: "TFF oyuncu hareketlerinde dört kulüp kesintisiz olarak bu sırada yer alıyor.",
+  },
+  {
+    q: "Türkiye kariyerinde Gençlerbirliği → Trabzonspor → Ankaraspor (kiralık) → Giresunspor rotasına sahip futbolcu kimdir?",
+    a: "Aykut Demir", d: ["Aykut Akgün", "Uğur Demirok", "Mustafa Yumlu"],
+    era: "2010s", type: "career", clubs: ["Gençlerbirliği", "Trabzonspor", "Ankaraspor", "Giresunspor"],
+    players: ["Aykut Demir", "Aykut Akgün", "Uğur Demirok", "Mustafa Yumlu"],
+    key: "career-route|aykut-demir|gencler>trabzon>ankaraspor-loan>giresun", src: [S.aykutDemir],
+    note: "TFF profilinde Gençlerbirliği ve Trabzonspor'un ardından Ankaraspor kiralaması ile Giresunspor geçişi kronolojik olarak kayıtlı.",
+  },
+  {
+    q: "Türkiye kariyerinde Gaziantepspor → Konyaspor → Antalyaspor → Adanaspor rotasına sahip futbolcu kimdir?",
+    a: "Sedat Ağçay", d: ["Adem Koçak", "Hürriyet Gücer", "Mehmet Güven"],
+    era: "2000s-2010s", type: "career", clubs: ["Gaziantepspor", "Konyaspor", "Antalyaspor", "Adanaspor"],
+    players: ["Sedat Ağçay", "Adem Koçak", "Hürriyet Gücer", "Mehmet Güven"],
+    key: "career-route|sedat-agcay|gaziantep>konya>antalya>adana", src: [S.sedatAgcay],
+    note: "TFF hareket tablosu dört sözleşmeyi bu sırada veriyor.",
+  },
+  {
+    q: "Türkiye kariyerinde Antalyaspor → Bucaspor → Boluspor → Elazığspor rotasına sahip futbolcu kimdir?",
+    a: "Orhan Ak", d: ["Çağdaş Atan", "Mustafa Keçeli", "Ergün Teber"],
+    era: "2010s", type: "career", clubs: ["Antalyaspor", "Bucaspor", "Boluspor", "Elazığspor"],
+    players: ["Orhan Ak", "Çağdaş Atan", "Mustafa Keçeli", "Ergün Teber"],
+    key: "career-route|orhan-ak|antalya>buca>bolu>elazig", src: [S.orhanAk],
+    note: "TFF profili Antalyaspor sonrasındaki Bucaspor-Boluspor-Elazığspor zincirini tarih sırasıyla gösteriyor.",
+  },
+  {
+    q: "Türkiye kariyerinde Manisaspor → Eskişehirspor → Konyaspor → Osmanlıspor rotasına sahip futbolcu kimdir?",
+    a: "Mehmet Güven", d: ["Mehmet Sedef", "Yiğit İncedemir", "Mehmet Nas"],
+    era: "2010s", type: "career", clubs: ["Manisaspor", "Eskişehirspor", "Konyaspor", "Osmanlıspor"],
+    players: ["Mehmet Güven", "Mehmet Sedef", "Yiğit İncedemir", "Mehmet Nas"],
+    key: "career-route|mehmet-guven|manisa>eskisehir>konya>osmanli", src: [S.mehmetGuven, S.transfer2015Summer],
+    note: "TFF oyuncu kaydı Manisaspor-Eskişehirspor-Konyaspor sırasını, TamSaha transfer listesi de Konyaspor'dan Osmanlıspor'a geçişi doğruluyor.",
+  },
+  {
+    q: "Aşağıdaki futbolculardan hangisi Samsunspor'da forma giymemiştir?",
+    a: "Hakan Özmert", d: ["Mehmet Nas", "Mustafa Sarp", "Serdar Özkan"],
+    era: "2000s-2010s", type: "did_not_play", clubs: ["Samsunspor"],
+    players: ["Hakan Özmert", "Mehmet Nas", "Mustafa Sarp", "Serdar Özkan"],
+    key: "club-not|samsunspor|hakan-ozmert", src: [S.hakanOzmert, S.mehmetNas, S.mustafaSarp, S.serdarOzkan],
+    note: "TFF kariyer kayıtlarında Mehmet Nas, Mustafa Sarp ve Serdar Özkan için Samsunspor bulunuyor; Hakan Özmert'in eksiksiz hareket listesinde bulunmuyor.",
+  },
+  {
+    q: "Aşağıdaki futbolculardan hangisi Antalyaspor'da forma giymemiştir?",
+    a: "Mehmet Nas", d: ["Hakan Özmert", "Ömer Şişmanoğlu", "Yekta Kurtuluş"],
+    era: "2010s", type: "did_not_play", clubs: ["Antalyaspor"],
+    players: ["Mehmet Nas", "Hakan Özmert", "Ömer Şişmanoğlu", "Yekta Kurtuluş"],
+    key: "club-not|antalyaspor|mehmet-nas", src: [S.mehmetNas, S.hakanOzmert, S.omerSismanoglu, S.yektaKurtulus],
+    note: "Üç yanlış şıkkın Antalyaspor kaydı TFF'de var; Mehmet Nas'ın tam kariyer listesinde Antalyaspor yok.",
+  },
+  {
+    q: "Aşağıdaki futbolculardan hangisi Elazığspor'da forma giymemiştir?",
+    a: "Ali Tandoğan", d: ["Sezer Badur", "Mehmet Nas", "Orhan Ak"],
+    era: "2010s", type: "did_not_play", clubs: ["Elazığspor"],
+    players: ["Ali Tandoğan", "Sezer Badur", "Mehmet Nas", "Orhan Ak"],
+    key: "club-not|elazigspor|ali-tandogan", src: [S.aliTandogan, S.sezerBadur, S.mehmetNas, S.orhanAk],
+    note: "TFF kayıtları Sezer Badur, Mehmet Nas ve Orhan Ak'ın Elazığspor dönemlerini gösteriyor; Ali Tandoğan'ın kariyerinde Elazığspor bulunmuyor.",
+  },
+  {
+    q: "Balıkesirspor, Ermin Zec'i 2015 kış transfer döneminde hangi kulüpten aldı?",
+    a: "HNK Rijeka", d: ["El Ahli", "RNK Split", "Moreirense"],
+    era: "2010s", type: "transfer", clubs: ["Balıkesirspor"],
+    players: ["Ermin Zec"],
+    key: "transfer|2015-winter|ermin-zec|rijeka>balikesir", src: [S.transfer2015Winter],
+    note: "TFF TamSaha transfer listesinde Ermin Zec'in önceki kulübü HNK Rijeka; diğer şıklar aynı Balıkesirspor listesindeki oyuncuların geldiği kulüpler.",
+  },
+  {
+    q: "Koray Arslan, 2015 kış transfer döneminde Gaziantepspor'dan hangi kulübe geçti?",
+    a: "Akhisar Belediyespor", d: ["Balıkesirspor", "Konyaspor", "Mersin İdmanyurdu"],
+    era: "2010s", type: "transfer", clubs: ["Gaziantepspor", "Akhisarspor"],
+    players: ["Koray Arslan"],
+    key: "transfer|2015-winter|koray-arslan|gaziantep>akhisar", src: [S.transfer2015Winter],
+    note: "TFF TamSaha listesi Akhisar Belediyespor gelenlerinde Koray Arslan'ı Gaziantepspor bağlantısıyla veriyor.",
+  },
+  {
+    q: "2010-11 Süper Lig sezonunda Antalyaspor formasıyla 10 gol atan Brezilyalı futbolcu kimdi?",
+    a: "Tita", d: ["Necati Ateş", "Ali Zitouni", "Serge Djiehoua"],
+    era: "2010s", type: "scorer", clubs: ["Antalyaspor"],
+    players: ["Tita", "Necati Ateş", "Ali Zitouni", "Serge Djiehoua"],
+    key: "scorer|antalyaspor|2010-11|tita-10", src: [S.scorer2011, S.isaacTita],
+    note: "TFF sezon yıllığı Tita'yı Antalyaspor adına 10 golle listeliyor; TFF kariyer yazısı aynı sayıyı ayrıca doğruluyor.",
+  },
+  {
+    q: "2014-15 sezonunda Mersin İdmanyurdu'nun teknik direktörü kimdi?",
+    a: "Rıza Çalımbay", d: ["Mesut Bakkal", "Hikmet Karaman", "Tolunay Kafkas"],
+    era: "2010s", type: "coach", clubs: ["Mersin İdmanyurdu"],
+    players: ["Rıza Çalımbay", "Mesut Bakkal", "Hikmet Karaman", "Tolunay Kafkas"],
+    key: "coach|mersin-idmanyurdu|2014-15|riza-calimbay", src: [S.mersinRiza],
+    note: "TFF'nin 8 Kasım 2014 tarihli Mersin İdmanyurdu-Balıkesirspor kaydı Mersin teknik direktörünü Rıza Çalımbay olarak veriyor.",
+  },
+];
+
+if (raw.length !== 25) throw new Error(`25 aday bekleniyordu, ${raw.length} bulundu.`);
+
+const candidates = raw.map((item, index) => {
+  const id = index + 1;
+  const correctOption = (id - 1) % 4;
+  const options = [...item.d];
+  options.splice(correctOption, 0, item.a);
+  return {
+    candidate_id: `SL-AH-02-${String(id).padStart(3, "0")}`,
+    question: item.q,
+    options,
+    correct_option: correctOption,
+    era: item.era,
+    difficulty: difficultyFor(id),
+    question_type: item.type,
+    focus_clubs: item.clubs,
+    players: item.players,
+    answer_player: item.a,
+    anadolu_weighted: true,
+    canonical_fact_key: item.key,
+    semantic_signature: item.key,
+    verification_source: item.src[0],
+    verification_source_2: item.src[1] ?? null,
+    verification_sources: item.src,
+    verification_notes: item.note,
+    status: "accepted",
+  };
+});
+
+await writeFile(OUTPUT, `${JSON.stringify(candidates, null, 2)}\n`, "utf8");
+console.log(`Yazıldı: ${OUTPUT} (${candidates.length} aday)`);

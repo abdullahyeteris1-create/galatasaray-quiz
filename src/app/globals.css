@@ -28,6 +28,8 @@
 .game-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.4); }
 .game-card-galatasaray { background: linear-gradient(145deg, rgba(215,25,32,.8), #121827 70%); }
 .game-card-super-lig { background: linear-gradient(145deg, #126b52, #071b2e 75%); }
+.game-card-memory { background: linear-gradient(145deg, rgba(246,197,0,.24), #111827 62%, rgba(215,25,32,.55)); }
+.game-card-memory-pattern { position: absolute; inset: 0; opacity: .16; background-image: linear-gradient(135deg, transparent 25%, rgba(246,197,0,.9) 25%, rgba(246,197,0,.9) 27%, transparent 27%, transparent 72%, rgba(215,25,32,.9) 72%, rgba(215,25,32,.9) 74%, transparent 74%); background-size: 42px 42px; }
 .game-card-badge { display: block; font-size: 11px; letter-spacing: .14em; font-weight: 800; opacity: .85; }
 .game-card-mark { display: block; margin-top: 22px; font-size: 40px; font-weight: 900; color: #f6c500; }
 .game-card-mark-ball { color: #8cebc3; }
@@ -35,6 +37,58 @@
 .game-card-content p { color: #c3cad5; max-width: 340px; }
 .game-card-cta { display: inline-block; margin-top: 18px; font-weight: 800; }
 .selection-footnote { margin-top: 22px; color: #718096; font-size: 12px; }
+
+/* Galatasaray Hafıza Yarışı */
+.memory-page { min-height: 100svh; padding: 18px 12px 34px; background: radial-gradient(circle at 50% -10%, #202c47 0, #080b12 56%, #050609 100%); color: var(--white); }
+.memory-shell { width: min(100%, 470px); margin: 0 auto; }
+.memory-topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 42px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.memory-topbar a, .memory-back-link { color: var(--yellow); text-decoration: none; font-weight: 800; }
+.memory-game-heading { display: flex; align-items: center; justify-content: space-between; padding: 18px 2px 10px; }
+.memory-game-heading p, .memory-kicker { margin: 0; color: var(--yellow); font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.memory-game-heading h1, .memory-menu h1 { margin: 5px 0 0; font-size: clamp(26px, 8vw, 40px); line-height: .95; letter-spacing: -.04em; }
+.memory-game-heading img { width: 46px; height: 46px; object-fit: contain; }
+.memory-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 16px; }
+.memory-stats span, .memory-result-grid span { display: grid; gap: 3px; min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.035); padding: 9px 5px; text-align: center; }
+.memory-stats b, .memory-result-grid b { color: white; font-family: var(--font-geist-mono), monospace; font-size: 16px; }
+.memory-stats small, .memory-result-grid small { overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.memory-card-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(7px, 2vw, 10px); perspective: 900px; }
+.memory-card { min-width: 0; aspect-ratio: 1; padding: 0; border: 0; background: transparent; cursor: pointer; perspective: 600px; }
+.memory-card:disabled { cursor: default; }
+.memory-card-inner { display: block; width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .42s cubic-bezier(.4,0,.2,1); }
+.memory-card.is-open .memory-card-inner { transform: rotateY(180deg); }
+.memory-card-front, .memory-card-back { position: absolute; inset: 0; display: grid; place-items: center; padding: 5px; border-radius: 12px; backface-visibility: hidden; overflow-wrap: anywhere; text-align: center; }
+.memory-card-front { border: 1px solid rgba(246,197,0,.55); background: linear-gradient(145deg, #d71920, #761218); color: rgba(255,255,255,.84); font-family: var(--font-geist-mono), monospace; font-size: clamp(16px, 5vw, 25px); font-weight: 900; box-shadow: 0 6px 18px rgba(0,0,0,.22); }
+.memory-card-back { transform: rotateY(180deg); border: 1px solid rgba(246,197,0,.35); background: linear-gradient(145deg, #1b273b, #0d121d); color: white; font-size: clamp(11px, 3.1vw, 16px); font-weight: 800; line-height: 1.15; }
+.memory-card.is-matched .memory-card-back { border-color: var(--yellow); background: linear-gradient(145deg, rgba(246,197,0,.26), rgba(215,25,32,.22)); color: var(--yellow); }
+.memory-card:not(:disabled):hover .memory-card-front { border-color: white; transform: translateY(-2px); }
+.memory-result { margin-top: 18px; border: 1px solid rgba(246,197,0,.35); border-radius: 20px; background: linear-gradient(145deg, rgba(246,197,0,.12), rgba(215,25,32,.08)); padding: 18px 14px; text-align: center; }
+.memory-trophy { display: grid; width: 52px; height: 52px; margin: 0 auto 10px; place-items: center; border-radius: 50%; background: var(--yellow); font-size: 28px; }
+.memory-result > p { margin: 0; color: var(--yellow); font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.memory-result h2 { margin: 6px 0 16px; font-size: 25px; }
+.memory-result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.memory-result-grid .memory-result-score { grid-column: 1 / -1; border-color: rgba(246,197,0,.38); background: rgba(246,197,0,.08); }
+.memory-result-score b { color: var(--yellow); font-size: 25px; }
+.memory-result-actions { display: grid; gap: 8px; margin-top: 14px; }
+.memory-primary-button, .memory-secondary-button { display: flex; min-height: 50px; align-items: center; justify-content: center; gap: 12px; border: 1px solid var(--yellow); border-radius: 12px; background: linear-gradient(135deg, var(--yellow), #d99e00); color: #161107; font-size: 12px; font-weight: 950; text-decoration: none; cursor: pointer; }
+.memory-secondary-button { border-color: var(--line); background: rgba(255,255,255,.04); color: white; }
+.memory-menu { padding: 18px 0; text-align: center; }
+.memory-menu .memory-back-link { display: block; margin-bottom: 20px; text-align: left; }
+.memory-logo { width: 100px; height: 100px; object-fit: contain; }
+.memory-menu h1 { color: var(--yellow); font-size: clamp(36px, 12vw, 58px); }
+.memory-intro { max-width: 350px; margin: 12px auto 26px; color: #aeb7c7; font-size: 13px; line-height: 1.5; }
+.memory-menu h2 { margin: 20px 0 9px; color: #dce2eb; font-size: 11px; letter-spacing: .12em; text-align: left; text-transform: uppercase; }
+.memory-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.memory-choice-grid button, .memory-category-grid button { min-height: 60px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.035); color: white; cursor: pointer; }
+.memory-choice-grid button { display: grid; align-content: center; gap: 4px; }
+.memory-choice-grid strong { font-size: 14px; }
+.memory-choice-grid span { color: var(--muted); font-size: 10px; }
+.memory-choice-grid button.selected, .memory-category-grid button.selected { border-color: var(--yellow); background: rgba(246,197,0,.12); box-shadow: inset 0 0 0 1px rgba(246,197,0,.18); }
+.memory-category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.memory-category-grid button { min-height: 48px; font-size: 11px; font-weight: 800; }
+.memory-category-grid button:last-child { grid-column: 1 / -1; }
+.memory-menu .memory-primary-button { width: 100%; margin-top: 22px; }
+@media (min-width: 520px) { .memory-page { padding: 28px 20px; } .memory-shell { border: 1px solid rgba(255,255,255,.08); border-radius: 28px; background: rgba(7,10,17,.78); box-shadow: 0 35px 90px rgba(0,0,0,.42); padding: 16px 20px 22px; } }
+@media (prefers-reduced-motion: reduce) { .memory-card-inner, .memory-card:not(:disabled):hover .memory-card-front { transition: none; transform: none; } .memory-card.is-open .memory-card-inner { transform: rotateY(180deg); } }
 .game-selection-card { position: relative; overflow: hidden; min-height: 260px; padding: 28px; border: 1px solid rgba(255,255,255,.13); border-radius: 24px; color: white; text-decoration: none; transition: transform .2s, border-color .2s; }
 .game-selection-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.4); }
 .game-selection-card h2 { margin: 22px 0 8px; font-size: 30px; }

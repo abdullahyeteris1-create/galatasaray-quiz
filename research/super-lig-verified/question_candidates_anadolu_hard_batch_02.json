@@ -1,0 +1,894 @@
+[
+  {
+    "candidate_id": "SL-AH-02-001",
+    "question": "Hangi futbolcu hem Kardemir Karabükspor hem de Antalyaspor forması giymiştir?",
+    "options": [
+      "Hakan Özmert",
+      "Sedat Ağçay",
+      "Yiğit İncedemir",
+      "Kerem Şeras"
+    ],
+    "correct_option": 0,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Kardemir Karabükspor",
+      "Antalyaspor"
+    ],
+    "players": [
+      "Hakan Özmert",
+      "Sedat Ağçay",
+      "Yiğit İncedemir",
+      "Kerem Şeras"
+    ],
+    "answer_player": "Hakan Özmert",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|hakan-ozmert|antalyaspor+karabukspor",
+    "semantic_signature": "player-clubs|hakan-ozmert|antalyaspor+karabukspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30"
+    ],
+    "verification_notes": "TFF oyuncu hareketleri Hakan Özmert için hem Kardemir Karabükspor hem Antalyaspor kayıtlarını gösteriyor; diğer seçeneklerin yalnızca biriyle bağı var.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-002",
+    "question": "Hangi futbolcu hem Eskişehirspor hem de Denizlispor forması giymiştir?",
+    "options": [
+      "Ümit Karan",
+      "Souleymane Youla",
+      "Mehmet Yıldız",
+      "Darryl Roberts"
+    ],
+    "correct_option": 1,
+    "era": "2000s",
+    "difficulty": "orta",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Eskişehirspor",
+      "Denizlispor"
+    ],
+    "players": [
+      "Souleymane Youla",
+      "Ümit Karan",
+      "Mehmet Yıldız",
+      "Darryl Roberts"
+    ],
+    "answer_player": "Souleymane Youla",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|souleymane-youla|denizlispor+eskisehirspor",
+    "semantic_signature": "player-clubs|souleymane-youla|denizlispor+eskisehirspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=29807&pageID=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=29807&pageID=30"
+    ],
+    "verification_notes": "TFF kaydında Youla'nın Eskişehirspor'dan Denizlispor'a geçtiği görülüyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-003",
+    "question": "Hangi futbolcu hem Manisaspor hem de Sakaryaspor forması giymiştir?",
+    "options": [
+      "Ersen Martin",
+      "Hakan Özmert",
+      "Sezer Badur",
+      "Uğur İnceman"
+    ],
+    "correct_option": 2,
+    "era": "2000s-2010s",
+    "difficulty": "efsane",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Manisaspor",
+      "Sakaryaspor"
+    ],
+    "players": [
+      "Sezer Badur",
+      "Ersen Martin",
+      "Hakan Özmert",
+      "Uğur İnceman"
+    ],
+    "answer_player": "Sezer Badur",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|sezer-badur|manisaspor+sakaryaspor",
+    "semantic_signature": "player-clubs|sezer-badur|manisaspor+sakaryaspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=30033&pageId=30",
+    "verification_source_2": "https://www.mackolik.com/futbolcu/sezer-badur/9sf255sgjxb1kwsd6idrfxi39",
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=30033&pageId=30",
+      "https://www.mackolik.com/futbolcu/sezer-badur/9sf255sgjxb1kwsd6idrfxi39"
+    ],
+    "verification_notes": "TFF kariyer kaydı iki kulübü de gösteriyor; Maçkolik sezon istatistikleri Manisaspor'da 6, Sakaryaspor'da 17 resmî maça çıktığını doğruluyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-004",
+    "question": "Hangi futbolcu hem Samsunspor hem de Sakaryaspor forması giymiştir?",
+    "options": [
+      "Serdar Özkan",
+      "Hakan Özmert",
+      "Mehmet Nas",
+      "Musa Aydın"
+    ],
+    "correct_option": 3,
+    "era": "2000s",
+    "difficulty": "orta",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Samsunspor",
+      "Sakaryaspor"
+    ],
+    "players": [
+      "Musa Aydın",
+      "Serdar Özkan",
+      "Hakan Özmert",
+      "Mehmet Nas"
+    ],
+    "answer_player": "Musa Aydın",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|musa-aydin|sakaryaspor+samsunspor",
+    "semantic_signature": "player-clubs|musa-aydin|sakaryaspor+samsunspor",
+    "verification_source": "https://www.tff.org/default.aspx?ftxtID=3146&pageID=286",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/default.aspx?ftxtID=3146&pageID=286"
+    ],
+    "verification_notes": "TFF röportajı Musa Aydın'ın Samsunspor altyapısından yetiştiğini ve Sakaryaspor'da oynadığını açıkça belirtiyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-005",
+    "question": "Hangi futbolcu hem Denizlispor hem de Sivasspor forması giymiştir?",
+    "options": [
+      "Ersen Martin",
+      "Mehmet Yıldız",
+      "Souleymane Youla",
+      "Gökhan Ünal"
+    ],
+    "correct_option": 0,
+    "era": "2000s",
+    "difficulty": "zor",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Denizlispor",
+      "Sivasspor"
+    ],
+    "players": [
+      "Ersen Martin",
+      "Mehmet Yıldız",
+      "Souleymane Youla",
+      "Gökhan Ünal"
+    ],
+    "answer_player": "Ersen Martin",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|ersen-martin|denizlispor+sivasspor",
+    "semantic_signature": "player-clubs|ersen-martin|denizlispor+sivasspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=29567&pageID=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=29567&pageID=30"
+    ],
+    "verification_notes": "TFF oyuncu hareketlerinde Ersen Martin'in Denizlispor ve Sivasspor sözleşmeleri birlikte yer alıyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-006",
+    "question": "Hangi futbolcu hem Mersin İdmanyurdu hem de Samsunspor forması giymiştir?",
+    "options": [
+      "Ali Tandoğan",
+      "Mustafa Sarp",
+      "Mehmet Nas",
+      "Sedat Ağçay"
+    ],
+    "correct_option": 1,
+    "era": "2000s-2010s",
+    "difficulty": "zor",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Mersin İdmanyurdu",
+      "Samsunspor"
+    ],
+    "players": [
+      "Mustafa Sarp",
+      "Ali Tandoğan",
+      "Mehmet Nas",
+      "Sedat Ağçay"
+    ],
+    "answer_player": "Mustafa Sarp",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|mustafa-sarp|mersin+samsunspor",
+    "semantic_signature": "player-clubs|mustafa-sarp|mersin+samsunspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=468569&pageID=399",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=468569&pageID=399"
+    ],
+    "verification_notes": "TFF kaydı Mustafa Sarp'ın Mersin İdmanyurdu ve Samsunspor dönemlerini gösteriyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-007",
+    "question": "Hangi futbolcu hem Elazığspor hem de Eskişehirspor forması giymiştir?",
+    "options": [
+      "Erkan Zengin",
+      "Sezer Badur",
+      "Serdar Özkan",
+      "Hürriyet Gücer"
+    ],
+    "correct_option": 2,
+    "era": "2010s",
+    "difficulty": "efsane",
+    "question_type": "two_club",
+    "focus_clubs": [
+      "Elazığspor",
+      "Eskişehirspor"
+    ],
+    "players": [
+      "Serdar Özkan",
+      "Erkan Zengin",
+      "Sezer Badur",
+      "Hürriyet Gücer"
+    ],
+    "answer_player": "Serdar Özkan",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|serdar-ozkan|elazigspor+eskisehirspor",
+    "semantic_signature": "player-clubs|serdar-ozkan|elazigspor+eskisehirspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=678886&pageId=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=678886&pageId=30"
+    ],
+    "verification_notes": "TFF hareketleri Serdar Özkan'ın Elazığspor'dan sonra Eskişehirspor'a geçtiğini doğruluyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-008",
+    "question": "Hangi futbolcu Gaziantepspor, Çaykur Rizespor ve Samsunspor kulüplerinin üçünde de forma giymiştir?",
+    "options": [
+      "Mehmet Nas",
+      "Mustafa Sarp",
+      "Murat Ceylan",
+      "Mehmet Polat"
+    ],
+    "correct_option": 3,
+    "era": "2000s",
+    "difficulty": "efsane",
+    "question_type": "three_club",
+    "focus_clubs": [
+      "Gaziantepspor",
+      "Çaykur Rizespor",
+      "Samsunspor"
+    ],
+    "players": [
+      "Mehmet Polat",
+      "Mehmet Nas",
+      "Mustafa Sarp",
+      "Murat Ceylan"
+    ],
+    "answer_player": "Mehmet Polat",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|mehmet-polat|gaziantepspor+rizespor+samsunspor",
+    "semantic_signature": "player-clubs|mehmet-polat|gaziantepspor+rizespor+samsunspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=27110&pageId=30",
+    "verification_source_2": "https://www.tff.org/default.aspx?ftxtID=5038&pageID=286",
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=27110&pageId=30",
+      "https://www.tff.org/default.aspx?ftxtID=5038&pageID=286"
+    ],
+    "verification_notes": "TFF profil ve röportajı Mehmet Polat'ın Gaziantepspor-Rizespor-Samsunspor kariyer üçlüsünü doğruluyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-009",
+    "question": "Hangi futbolcu Samsunspor, Manisaspor ve Sivasspor kulüplerinin üçünde de forma giymiştir?",
+    "options": [
+      "Mehmet Nas",
+      "Sezer Badur",
+      "Musa Aydın",
+      "Uğur İnceman"
+    ],
+    "correct_option": 0,
+    "era": "2000s-2010s",
+    "difficulty": "zor",
+    "question_type": "three_club",
+    "focus_clubs": [
+      "Samsunspor",
+      "Manisaspor",
+      "Sivasspor"
+    ],
+    "players": [
+      "Mehmet Nas",
+      "Sezer Badur",
+      "Musa Aydın",
+      "Uğur İnceman"
+    ],
+    "answer_player": "Mehmet Nas",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|mehmet-nas|manisaspor+samsunspor+sivasspor",
+    "semantic_signature": "player-clubs|mehmet-nas|manisaspor+samsunspor+sivasspor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30"
+    ],
+    "verification_notes": "TFF kaydında Mehmet Nas için üç kulübün de sözleşme satırları bulunuyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-010",
+    "question": "Hangi futbolcu Denizlispor, Akhisarspor ve Kayserispor kulüplerinin üçünde de forma giymiştir?",
+    "options": [
+      "Bilal Kısa",
+      "Güray Vural",
+      "Theofanis Gekas",
+      "Mehmet Eren Boyraz"
+    ],
+    "correct_option": 1,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "three_club",
+    "focus_clubs": [
+      "Denizlispor",
+      "Akhisarspor",
+      "Kayserispor"
+    ],
+    "players": [
+      "Güray Vural",
+      "Bilal Kısa",
+      "Theofanis Gekas",
+      "Mehmet Eren Boyraz"
+    ],
+    "answer_player": "Güray Vural",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|guray-vural|akhisar+denizli+kayseri",
+    "semantic_signature": "player-clubs|guray-vural|akhisar+denizli+kayseri",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=431299&pageId=526",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=431299&pageId=526"
+    ],
+    "verification_notes": "TFF oyuncu hareketleri Güray Vural'ın Denizlispor, Akhisarspor ve Kayserispor kayıtlarını birlikte gösteriyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-011",
+    "question": "Hangi futbolcu Kayserispor, Antalyaspor ve Eskişehirspor kulüplerinin üçünde de forma giymiştir?",
+    "options": [
+      "Necati Ateş",
+      "Mehmet Yıldız",
+      "Ömer Şişmanoğlu",
+      "Gökhan Ünal"
+    ],
+    "correct_option": 2,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "three_club",
+    "focus_clubs": [
+      "Kayserispor",
+      "Antalyaspor",
+      "Eskişehirspor"
+    ],
+    "players": [
+      "Ömer Şişmanoğlu",
+      "Necati Ateş",
+      "Mehmet Yıldız",
+      "Gökhan Ünal"
+    ],
+    "answer_player": "Ömer Şişmanoğlu",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|omer-sismanoglu|antalya+eskisehir+kayserispor",
+    "semantic_signature": "player-clubs|omer-sismanoglu|antalya+eskisehir+kayserispor",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=1252882&pageId=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=1252882&pageId=30"
+    ],
+    "verification_notes": "TFF profili Ömer Şişmanoğlu'nun Kayserispor, Antalyaspor ve kiralık Eskişehirspor dönemlerini doğruluyor; Kayseri Erciyesspor ayrı kulüp kabul edildi.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-012",
+    "question": "Hangi futbolcu Gençlerbirliği, Manisaspor ve Antalyaspor kulüplerinin üçünde de forma giymiştir?",
+    "options": [
+      "Kahe",
+      "Uğur İnceman",
+      "Souleymane Youla",
+      "Isaac Promise"
+    ],
+    "correct_option": 3,
+    "era": "2000s-2010s",
+    "difficulty": "zor",
+    "question_type": "three_club",
+    "focus_clubs": [
+      "Gençlerbirliği",
+      "Manisaspor",
+      "Antalyaspor"
+    ],
+    "players": [
+      "Isaac Promise",
+      "Kahe",
+      "Uğur İnceman",
+      "Souleymane Youla"
+    ],
+    "answer_player": "Isaac Promise",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|isaac-promise|antalya+genclerbirligi+manisa",
+    "semantic_signature": "player-clubs|isaac-promise|antalya+genclerbirligi+manisa",
+    "verification_source": "https://www.tff.org/default.aspx?ftxtID=17195&pageID=201",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/default.aspx?ftxtID=17195&pageID=201"
+    ],
+    "verification_notes": "TFF kariyer yazısı Isaac Promise'ın Gençlerbirliği-Trabzonspor-Manisaspor-Antalyaspor sırasını anlatıyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-013",
+    "question": "Hangi futbolcu Kasımpaşa, Sivasspor ve Antalyaspor kulüplerinin üçünde de forma giymiştir?",
+    "options": [
+      "Yekta Kurtuluş",
+      "Hakan Arslan",
+      "Serdar Özkan",
+      "Özer Hurmacı"
+    ],
+    "correct_option": 0,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "three_club",
+    "focus_clubs": [
+      "Kasımpaşa",
+      "Sivasspor",
+      "Antalyaspor"
+    ],
+    "players": [
+      "Yekta Kurtuluş",
+      "Hakan Arslan",
+      "Serdar Özkan",
+      "Özer Hurmacı"
+    ],
+    "answer_player": "Yekta Kurtuluş",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "player-clubs|yekta-kurtulus|antalya+kasimpasa+sivas",
+    "semantic_signature": "player-clubs|yekta-kurtulus|antalya+kasimpasa+sivas",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=304236&pageId=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=304236&pageId=30"
+    ],
+    "verification_notes": "TFF kaydı Yekta Kurtuluş'un Kasımpaşa, Sivasspor ve Antalyaspor sözleşmelerini gösteriyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-014",
+    "question": "Türkiye kariyerinde Denizlispor → Gençlerbirliği → Beşiktaş → Bursaspor rotasına sahip futbolcu kimdir?",
+    "options": [
+      "Ali Güneş",
+      "Ali Tandoğan",
+      "İbrahim Akın",
+      "Serdar Kurtuluş"
+    ],
+    "correct_option": 1,
+    "era": "2000s",
+    "difficulty": "efsane",
+    "question_type": "career",
+    "focus_clubs": [
+      "Denizlispor",
+      "Gençlerbirliği",
+      "Beşiktaş",
+      "Bursaspor"
+    ],
+    "players": [
+      "Ali Tandoğan",
+      "Ali Güneş",
+      "İbrahim Akın",
+      "Serdar Kurtuluş"
+    ],
+    "answer_player": "Ali Tandoğan",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "career-route|ali-tandogan|denizli>gencler>besiktas>bursa",
+    "semantic_signature": "career-route|ali-tandogan|denizli>gencler>besiktas>bursa",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=27441&pageID=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=27441&pageID=30"
+    ],
+    "verification_notes": "TFF oyuncu hareketlerinde dört kulüp kesintisiz olarak bu sırada yer alıyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-015",
+    "question": "Türkiye kariyerinde Gençlerbirliği → Trabzonspor → Ankaraspor (kiralık) → Giresunspor rotasına sahip futbolcu kimdir?",
+    "options": [
+      "Aykut Akgün",
+      "Uğur Demirok",
+      "Aykut Demir",
+      "Mustafa Yumlu"
+    ],
+    "correct_option": 2,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "career",
+    "focus_clubs": [
+      "Gençlerbirliği",
+      "Trabzonspor",
+      "Ankaraspor",
+      "Giresunspor"
+    ],
+    "players": [
+      "Aykut Demir",
+      "Aykut Akgün",
+      "Uğur Demirok",
+      "Mustafa Yumlu"
+    ],
+    "answer_player": "Aykut Demir",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "career-route|aykut-demir|gencler>trabzon>ankaraspor-loan>giresun",
+    "semantic_signature": "career-route|aykut-demir|gencler>trabzon>ankaraspor-loan>giresun",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=1063466&pageId=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=1063466&pageId=30"
+    ],
+    "verification_notes": "TFF profilinde Gençlerbirliği ve Trabzonspor'un ardından Ankaraspor kiralaması ile Giresunspor geçişi kronolojik olarak kayıtlı.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-016",
+    "question": "Türkiye kariyerinde Gaziantepspor → Konyaspor → Antalyaspor → Adanaspor rotasına sahip futbolcu kimdir?",
+    "options": [
+      "Adem Koçak",
+      "Hürriyet Gücer",
+      "Mehmet Güven",
+      "Sedat Ağçay"
+    ],
+    "correct_option": 3,
+    "era": "2000s-2010s",
+    "difficulty": "efsane",
+    "question_type": "career",
+    "focus_clubs": [
+      "Gaziantepspor",
+      "Konyaspor",
+      "Antalyaspor",
+      "Adanaspor"
+    ],
+    "players": [
+      "Sedat Ağçay",
+      "Adem Koçak",
+      "Hürriyet Gücer",
+      "Mehmet Güven"
+    ],
+    "answer_player": "Sedat Ağçay",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "career-route|sedat-agcay|gaziantep>konya>antalya>adana",
+    "semantic_signature": "career-route|sedat-agcay|gaziantep>konya>antalya>adana",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=370938&pageID=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=370938&pageID=30"
+    ],
+    "verification_notes": "TFF hareket tablosu dört sözleşmeyi bu sırada veriyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-017",
+    "question": "Türkiye kariyerinde Antalyaspor → Bucaspor → Boluspor → Elazığspor rotasına sahip futbolcu kimdir?",
+    "options": [
+      "Orhan Ak",
+      "Çağdaş Atan",
+      "Mustafa Keçeli",
+      "Ergün Teber"
+    ],
+    "correct_option": 0,
+    "era": "2010s",
+    "difficulty": "efsane",
+    "question_type": "career",
+    "focus_clubs": [
+      "Antalyaspor",
+      "Bucaspor",
+      "Boluspor",
+      "Elazığspor"
+    ],
+    "players": [
+      "Orhan Ak",
+      "Çağdaş Atan",
+      "Mustafa Keçeli",
+      "Ergün Teber"
+    ],
+    "answer_player": "Orhan Ak",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "career-route|orhan-ak|antalya>buca>bolu>elazig",
+    "semantic_signature": "career-route|orhan-ak|antalya>buca>bolu>elazig",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=27671&pageID=30",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=27671&pageID=30"
+    ],
+    "verification_notes": "TFF profili Antalyaspor sonrasındaki Bucaspor-Boluspor-Elazığspor zincirini tarih sırasıyla gösteriyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-018",
+    "question": "Türkiye kariyerinde Manisaspor → Eskişehirspor → Konyaspor → Osmanlıspor rotasına sahip futbolcu kimdir?",
+    "options": [
+      "Mehmet Sedef",
+      "Mehmet Güven",
+      "Yiğit İncedemir",
+      "Mehmet Nas"
+    ],
+    "correct_option": 1,
+    "era": "2010s",
+    "difficulty": "efsane",
+    "question_type": "career",
+    "focus_clubs": [
+      "Manisaspor",
+      "Eskişehirspor",
+      "Konyaspor",
+      "Osmanlıspor"
+    ],
+    "players": [
+      "Mehmet Güven",
+      "Mehmet Sedef",
+      "Yiğit İncedemir",
+      "Mehmet Nas"
+    ],
+    "answer_player": "Mehmet Güven",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "career-route|mehmet-guven|manisa>eskisehir>konya>osmanli",
+    "semantic_signature": "career-route|mehmet-guven|manisa>eskisehir>konya>osmanli",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=663117&pageID=30",
+    "verification_source_2": "https://www.tff.org/Resources/Tamsaha/131/files/assets/basic-html/page28.html",
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=663117&pageID=30",
+      "https://www.tff.org/Resources/Tamsaha/131/files/assets/basic-html/page28.html"
+    ],
+    "verification_notes": "TFF oyuncu kaydı Manisaspor-Eskişehirspor-Konyaspor sırasını, TamSaha transfer listesi de Konyaspor'dan Osmanlıspor'a geçişi doğruluyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-019",
+    "question": "Aşağıdaki futbolculardan hangisi Samsunspor'da forma giymemiştir?",
+    "options": [
+      "Mehmet Nas",
+      "Mustafa Sarp",
+      "Hakan Özmert",
+      "Serdar Özkan"
+    ],
+    "correct_option": 2,
+    "era": "2000s-2010s",
+    "difficulty": "zor",
+    "question_type": "did_not_play",
+    "focus_clubs": [
+      "Samsunspor"
+    ],
+    "players": [
+      "Hakan Özmert",
+      "Mehmet Nas",
+      "Mustafa Sarp",
+      "Serdar Özkan"
+    ],
+    "answer_player": "Hakan Özmert",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "club-not|samsunspor|hakan-ozmert",
+    "semantic_signature": "club-not|samsunspor|hakan-ozmert",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30",
+    "verification_source_2": "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30",
+      "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+      "https://www.tff.org/Default.aspx?kisiID=468569&pageID=399",
+      "https://www.tff.org/Default.aspx?kisiID=678886&pageId=30"
+    ],
+    "verification_notes": "TFF kariyer kayıtlarında Mehmet Nas, Mustafa Sarp ve Serdar Özkan için Samsunspor bulunuyor; Hakan Özmert'in eksiksiz hareket listesinde bulunmuyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-020",
+    "question": "Aşağıdaki futbolculardan hangisi Antalyaspor'da forma giymemiştir?",
+    "options": [
+      "Hakan Özmert",
+      "Ömer Şişmanoğlu",
+      "Yekta Kurtuluş",
+      "Mehmet Nas"
+    ],
+    "correct_option": 3,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "did_not_play",
+    "focus_clubs": [
+      "Antalyaspor"
+    ],
+    "players": [
+      "Mehmet Nas",
+      "Hakan Özmert",
+      "Ömer Şişmanoğlu",
+      "Yekta Kurtuluş"
+    ],
+    "answer_player": "Mehmet Nas",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "club-not|antalyaspor|mehmet-nas",
+    "semantic_signature": "club-not|antalyaspor|mehmet-nas",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+    "verification_source_2": "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30",
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+      "https://www.tff.org/Default.aspx?kisiId=770725&pageId=30",
+      "https://www.tff.org/Default.aspx?kisiID=1252882&pageId=30",
+      "https://www.tff.org/Default.aspx?kisiId=304236&pageId=30"
+    ],
+    "verification_notes": "Üç yanlış şıkkın Antalyaspor kaydı TFF'de var; Mehmet Nas'ın tam kariyer listesinde Antalyaspor yok.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-021",
+    "question": "Aşağıdaki futbolculardan hangisi Elazığspor'da forma giymemiştir?",
+    "options": [
+      "Ali Tandoğan",
+      "Sezer Badur",
+      "Mehmet Nas",
+      "Orhan Ak"
+    ],
+    "correct_option": 0,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "did_not_play",
+    "focus_clubs": [
+      "Elazığspor"
+    ],
+    "players": [
+      "Ali Tandoğan",
+      "Sezer Badur",
+      "Mehmet Nas",
+      "Orhan Ak"
+    ],
+    "answer_player": "Ali Tandoğan",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "club-not|elazigspor|ali-tandogan",
+    "semantic_signature": "club-not|elazigspor|ali-tandogan",
+    "verification_source": "https://www.tff.org/Default.aspx?kisiID=27441&pageID=30",
+    "verification_source_2": "https://www.tff.org/Default.aspx?kisiId=30033&pageId=30",
+    "verification_sources": [
+      "https://www.tff.org/Default.aspx?kisiID=27441&pageID=30",
+      "https://www.tff.org/Default.aspx?kisiId=30033&pageId=30",
+      "https://www.tff.org/Default.aspx?kisiID=29466&pageID=30",
+      "https://www.tff.org/Default.aspx?kisiID=27671&pageID=30"
+    ],
+    "verification_notes": "TFF kayıtları Sezer Badur, Mehmet Nas ve Orhan Ak'ın Elazığspor dönemlerini gösteriyor; Ali Tandoğan'ın kariyerinde Elazığspor bulunmuyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-022",
+    "question": "Balıkesirspor, Ermin Zec'i 2015 kış transfer döneminde hangi kulüpten aldı?",
+    "options": [
+      "El Ahli",
+      "HNK Rijeka",
+      "RNK Split",
+      "Moreirense"
+    ],
+    "correct_option": 1,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "transfer",
+    "focus_clubs": [
+      "Balıkesirspor"
+    ],
+    "players": [
+      "Ermin Zec"
+    ],
+    "answer_player": "HNK Rijeka",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "transfer|2015-winter|ermin-zec|rijeka>balikesir",
+    "semantic_signature": "transfer|2015-winter|ermin-zec|rijeka>balikesir",
+    "verification_source": "https://www.tff.org/Resources/Tamsaha/124/files/assets/basic-html/page27.html",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Resources/Tamsaha/124/files/assets/basic-html/page27.html"
+    ],
+    "verification_notes": "TFF TamSaha transfer listesinde Ermin Zec'in önceki kulübü HNK Rijeka; diğer şıklar aynı Balıkesirspor listesindeki oyuncuların geldiği kulüpler.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-023",
+    "question": "Koray Arslan, 2015 kış transfer döneminde Gaziantepspor'dan hangi kulübe geçti?",
+    "options": [
+      "Balıkesirspor",
+      "Konyaspor",
+      "Akhisar Belediyespor",
+      "Mersin İdmanyurdu"
+    ],
+    "correct_option": 2,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "transfer",
+    "focus_clubs": [
+      "Gaziantepspor",
+      "Akhisarspor"
+    ],
+    "players": [
+      "Koray Arslan"
+    ],
+    "answer_player": "Akhisar Belediyespor",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "transfer|2015-winter|koray-arslan|gaziantep>akhisar",
+    "semantic_signature": "transfer|2015-winter|koray-arslan|gaziantep>akhisar",
+    "verification_source": "https://www.tff.org/Resources/Tamsaha/124/files/assets/basic-html/page27.html",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/Resources/Tamsaha/124/files/assets/basic-html/page27.html"
+    ],
+    "verification_notes": "TFF TamSaha listesi Akhisar Belediyespor gelenlerinde Koray Arslan'ı Gaziantepspor bağlantısıyla veriyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-024",
+    "question": "2010-11 Süper Lig sezonunda Antalyaspor formasıyla 10 gol atan Brezilyalı futbolcu kimdi?",
+    "options": [
+      "Necati Ateş",
+      "Ali Zitouni",
+      "Serge Djiehoua",
+      "Tita"
+    ],
+    "correct_option": 3,
+    "era": "2010s",
+    "difficulty": "orta",
+    "question_type": "scorer",
+    "focus_clubs": [
+      "Antalyaspor"
+    ],
+    "players": [
+      "Tita",
+      "Necati Ateş",
+      "Ali Zitouni",
+      "Serge Djiehoua"
+    ],
+    "answer_player": "Tita",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "scorer|antalyaspor|2010-11|tita-10",
+    "semantic_signature": "scorer|antalyaspor|2010-11|tita-10",
+    "verification_source": "https://www.tff.org/Resources/TFF/Documents/002011/Ligler/SuperLig/almanak2011-12/2010-11-Super-Lig-Almanak.pdf",
+    "verification_source_2": "https://www.tff.org/default.aspx?ftxtID=17195&pageID=201",
+    "verification_sources": [
+      "https://www.tff.org/Resources/TFF/Documents/002011/Ligler/SuperLig/almanak2011-12/2010-11-Super-Lig-Almanak.pdf",
+      "https://www.tff.org/default.aspx?ftxtID=17195&pageID=201"
+    ],
+    "verification_notes": "TFF sezon yıllığı Tita'yı Antalyaspor adına 10 golle listeliyor; TFF kariyer yazısı aynı sayıyı ayrıca doğruluyor.",
+    "status": "accepted"
+  },
+  {
+    "candidate_id": "SL-AH-02-025",
+    "question": "2014-15 sezonunda Mersin İdmanyurdu'nun teknik direktörü kimdi?",
+    "options": [
+      "Rıza Çalımbay",
+      "Mesut Bakkal",
+      "Hikmet Karaman",
+      "Tolunay Kafkas"
+    ],
+    "correct_option": 0,
+    "era": "2010s",
+    "difficulty": "zor",
+    "question_type": "coach",
+    "focus_clubs": [
+      "Mersin İdmanyurdu"
+    ],
+    "players": [
+      "Rıza Çalımbay",
+      "Mesut Bakkal",
+      "Hikmet Karaman",
+      "Tolunay Kafkas"
+    ],
+    "answer_player": "Rıza Çalımbay",
+    "anadolu_weighted": true,
+    "canonical_fact_key": "coach|mersin-idmanyurdu|2014-15|riza-calimbay",
+    "semantic_signature": "coach|mersin-idmanyurdu|2014-15|riza-calimbay",
+    "verification_source": "https://www.tff.org/default.aspx?ftxtID=21732&pageID=201",
+    "verification_source_2": null,
+    "verification_sources": [
+      "https://www.tff.org/default.aspx?ftxtID=21732&pageID=201"
+    ],
+    "verification_notes": "TFF'nin 8 Kasım 2014 tarihli Mersin İdmanyurdu-Balıkesirspor kaydı Mersin teknik direktörünü Rıza Çalımbay olarak veriyor.",
+    "status": "accepted"
+  }
+]

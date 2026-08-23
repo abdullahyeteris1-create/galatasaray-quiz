@@ -15,3 +15,21 @@ Sources consulted in this tranche:
 - Transfermarkt Umut Bulut detailed stats: https://www.transfermarkt.com/umut-bulut/leistungsdatendetails/spieler/10143/verein/449
 - worldfootball.net Ozan İpek club matches: https://www.worldfootball.net/player_summary/ozan-pek/2/
 
+## Anadolu hard batch 01
+
+- Candidate data: `question_candidates_anadolu_hard_batch_01.json`
+- Rejected drafts: `rejected_candidates_anadolu_hard_batch_01.json`
+- Rebuild: `node research/super-lig-verified/build_anadolu_hard_batch_01.mjs`
+- Validate and report: `node research/super-lig-verified/validate_anadolu_hard_batch_01.mjs`
+- Quality report: `quality_report_anadolu_hard_batch_01.md`
+
+This batch remains in the research area and has not been applied to production.
+
+## Anadolu hard batch 02 and combined pool
+
+- Batch 02 candidate data: `question_candidates_anadolu_hard_batch_02.json`
+- Batch 02 rebuild: `node research/super-lig-verified/build_anadolu_hard_batch_02.mjs`
+- Combined validation: `node research/super-lig-verified/validate_anadolu_hard_combined_100.mjs`
+- Combined 100-question report: `quality_report_anadolu_hard_combined_100.md`
+
+Batch 02 adds 25 source-verified questions without any season/success questions. The combined 100-question pool remains staged research data and has not been applied to production.
