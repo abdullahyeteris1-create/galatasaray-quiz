@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GALATASARAY_MEMORY_DATA, MEMORY_CATEGORIES, type MemoryCategory } from "@/lib/memory/galatasarayMemoryData";
+import { ClassicMemoryGame } from "./ClassicMemoryGame";
 
 type Level = "beginner" | "advanced" | "master" | "legend";
 type Card = { id: string; pairId: string; value: string; side: "left" | "right" };
@@ -30,6 +31,7 @@ function formatTime(seconds: number) {
 }
 
 export function MemoryRaceGame() {
+  const [mode, setMode] = useState<"menu" | "info" | "classic">("menu");
   const [level, setLevel] = useState<Level>("beginner");
   const [category, setCategory] = useState<CategoryChoice>("mixed");
   const [cards, setCards] = useState<Card[]>([]);
@@ -81,7 +83,9 @@ export function MemoryRaceGame() {
     }, isMatch ? 260 : 720);
   }
 
-  if (!started) return <MemoryMenu level={level} category={category} onLevel={setLevel} onCategory={setCategory} onStart={startGame} />;
+  if (mode === "classic") return <main className="memory-page"><ClassicMemoryGame onBack={() => setMode("menu")} /></main>;
+  if (mode === "menu") return <MemoryModeMenu onInfo={() => setMode("info")} onClassic={() => setMode("classic")} />;
+  if (!started) return <MemoryMenu level={level} category={category} onLevel={setLevel} onCategory={setCategory} onStart={startGame} onBack={() => setMode("menu")} />;
 
   return (
     <main className="memory-page">
@@ -98,8 +102,12 @@ export function MemoryRaceGame() {
   );
 }
 
-function MemoryMenu({ level, category, onLevel, onCategory, onStart }: { level: Level; category: CategoryChoice; onLevel: (value: Level) => void; onCategory: (value: CategoryChoice) => void; onStart: () => void }) {
-  return <main className="memory-page"><section className="memory-shell memory-menu"><Link className="memory-back-link" href="/">← Ana Menü</Link><Image className="memory-logo" src="/galatasaray-logo.png" alt="Galatasaray logosu" width={112} height={112} priority /><p className="memory-kicker">GALATASARAY</p><h1>HAFIZA YARIŞI</h1><p className="memory-intro">Kartları hatırla, eşleştir ve sarı-kırmızı hafızanı göster.</p><h2>Seviye seç</h2><div className="memory-choice-grid">{(Object.entries(LEVELS) as [Level, typeof LEVELS[Level]][]).map(([id, item]) => <button key={id} className={level === id ? "selected" : ""} onClick={() => onLevel(id)}><strong>{item.label}</strong><span>{item.note}</span></button>)}</div><h2>Kategori seç</h2><div className="memory-category-grid">{MEMORY_CATEGORIES.map((item) => <button key={item.id} className={category === item.id ? "selected" : ""} onClick={() => onCategory(item.id)}>{item.label}</button>)}</div><button className="memory-primary-button" onClick={onStart}>OYUNA BAŞLA <span aria-hidden="true">→</span></button></section></main>;
+function MemoryModeMenu({ onInfo, onClassic }: { onInfo: () => void; onClassic: () => void }) {
+  return <main className="memory-page"><section className="memory-shell memory-menu"><Link className="memory-back-link" href="/">← Ana Menü</Link><Image className="memory-logo" src="/galatasaray-logo.png" alt="Galatasaray logosu" width={112} height={112} priority /><p className="memory-kicker">GALATASARAY</p><h1>HAFIZA YARIŞI</h1><p className="memory-intro">Kartları hatırla, eşleştir ve sarı-kırmızı hafızanı göster.</p><div className="memory-mode-menu"><button onClick={onInfo}><strong>BİLGİ EŞLEŞTİRME</strong><span>Oyuncu–sezon, kulüp, mevki ve Avrupa tarihi</span></button><button onClick={onClassic}><strong>KLASİK KART EŞLEŞTİRME</strong><span>Aynı futbolcunun kartlarını bul · Tek veya çok oyunculu</span></button></div></section></main>;
+}
+
+function MemoryMenu({ level, category, onLevel, onCategory, onStart, onBack }: { level: Level; category: CategoryChoice; onLevel: (value: Level) => void; onCategory: (value: CategoryChoice) => void; onStart: () => void; onBack: () => void }) {
+  return <main className="memory-page"><section className="memory-shell memory-menu"><button className="memory-back-link memory-plain-button" onClick={onBack}>← Modlar</button><Image className="memory-logo" src="/galatasaray-logo.png" alt="Galatasaray logosu" width={112} height={112} priority /><p className="memory-kicker">BİLGİ EŞLEŞTİRME</p><h1>HAFIZA YARIŞI</h1><p className="memory-intro">Kartları hatırla, eşleştir ve sarı-kırmızı hafızanı göster.</p><h2>Seviye seç</h2><div className="memory-choice-grid">{(Object.entries(LEVELS) as [Level, typeof LEVELS[Level]][]).map(([id, item]) => <button key={id} className={level === id ? "selected" : ""} onClick={() => onLevel(id)}><strong>{item.label}</strong><span>{item.note}</span></button>)}</div><h2>Kategori seç</h2><div className="memory-category-grid">{MEMORY_CATEGORIES.map((item) => <button key={item.id} className={category === item.id ? "selected" : ""} onClick={() => onCategory(item.id)}>{item.label}</button>)}</div><button className="memory-primary-button" onClick={onStart}>OYUNA BAŞLA <span aria-hidden="true">→</span></button></section></main>;
 }
 
 function MemoryResult({ seconds, moves, matched, wrong, score, onReplay }: { seconds: number; moves: number; matched: number; wrong: number; score: number; onReplay: () => void }) {
