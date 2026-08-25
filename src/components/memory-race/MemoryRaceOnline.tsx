@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAudioManager } from "@/lib/audio/audioManager";
 import { getMemoryRaceCardVisual } from "@/lib/memory-race/cardVisuals";
-import { createBoard, MEMORY_RACE_LEVELS, MEMORY_RACE_MAX_PLAYERS, MEMORY_RACE_ROUNDS, type MemoryRaceLevel, type MemoryRaceSession } from "@/lib/memory-race-online/config";
-import { createRoom, getState, hostStart, joinRoom, MemoryRaceRpcError, submit, tick, type MemoryRacePlayer, type MemoryRaceState } from "@/lib/memory-race-online/api";
+import { createBoard, MEMORY_RACE_LEVELS, MEMORY_RACE_MAX_PLAYERS, type MemoryRaceLevel, type MemoryRaceSession } from "@/lib/memory-race-online/config";
+import { createRoom, flipCard, getState, hostStart, joinRoom, MemoryRaceRpcError, tick, type MemoryRacePlayer, type MemoryRaceState } from "@/lib/memory-race-online/api";
 
 const SESSION_KEY = "gs_memory_race_session";
 type Screen = "home" | "setup" | "join" | "lobby" | "game" | "final";
@@ -34,16 +34,28 @@ export function MemoryRaceOnline() {
   const [session, setSession] = useState<MemoryRaceSession | null>(null);
   const [state, setState] = useState<MemoryRaceState | null>(null);
   const [name, setName] = useState(""); const [code, setCode] = useState("");
-  const [maxPlayers, setMaxPlayers] = useState(4); const [level, setLevel] = useState<MemoryRaceLevel>(1); const [rounds, setRounds] = useState(3);
-  const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const [selected, setSelected] = useState<number[]>([]); const [offset, setOffset] = useState(0); const [clientNow, setClientNow] = useState(0);
+  const [maxPlayers, setMaxPlayers] = useState(4); const [level, setLevel] = useState<MemoryRaceLevel>(1);
+  const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const [offset, setOffset] = useState(0); const [clientNow, setClientNow] = useState(0);
   const [soloBoard, setSoloBoard] = useState<ReturnType<typeof createBoard>>([]); const [soloOpen, setSoloOpen] = useState<number[]>([]); const [soloMatched, setSoloMatched] = useState<number[]>([]); const [soloScore, setSoloScore] = useState(0);
-  const [lastRound, setLastRound] = useState(0);
   const pollingInFlightRef = useRef(false);
   const tickInFlightRef = useRef(false);
   const currentStateRef = useRef<MemoryRaceState | null>(null);
   const pollingGenerationRef = useRef(0);
+  const pendingFlipRef = useRef(false);
 
   const applyState = useCallback((nextState: MemoryRaceState, serverOffsetMs: number) => {
+    const previousState = currentStateRef.current;
+    if (pendingFlipRef.current && previousState) {
+      const previousMatched = previousState.cards.filter((card) => card.matched).length;
+      const nextMatched = nextState.cards.filter((card) => card.matched).length;
+      if (nextMatched > previousMatched) {
+        getAudioManager().playRevealEffect(true);
+        pendingFlipRef.current = false;
+      } else if (nextState.room.reveal_until && !previousState.room.reveal_until) {
+        getAudioManager().playRevealEffect(false);
+        pendingFlipRef.current = false;
+      }
+    }
     currentStateRef.current = nextState;
     setState(nextState);
     setOffset(serverOffsetMs);
@@ -129,7 +141,7 @@ export function MemoryRaceOnline() {
     const token = session?.token;
     const code = sessionCode;
     const status = state?.room.status;
-    if (!roomId || !playerId || !token || status !== "playing" || !isHost) return;
+    if (!roomId || !playerId || !token || status !== "playing") return;
 
     const activeSession: MemoryRaceSession = { roomId, playerId, token, code };
 
@@ -157,29 +169,41 @@ export function MemoryRaceOnline() {
       cancelled = true;
       if (timer !== null) window.clearTimeout(timer);
     };
-  }, [session?.roomId, session?.playerId, session?.token, sessionCode, state?.room.status, isHost]);
-  useEffect(() => { if (state?.room.current_round && state.room.current_round !== lastRound) { setSelected([]); setLastRound(state.room.current_round); } }, [state?.room.current_round, lastRound]);
-
+  }, [session?.roomId, session?.playerId, session?.token, sessionCode, state?.room.status]);
   async function enter(request: Promise<{ room_id: string; player_id: string; token: string; code: string }>) { setBusy(true); setError(""); try { const result = await request; const next = { roomId: result.room_id, playerId: result.player_id, token: result.token, code: result.code }; window.localStorage.setItem(SESSION_KEY, JSON.stringify(next)); setSession(next); setScreen("lobby"); } catch (e) { setError(e instanceof Error ? e.message : "Odaya bağlanılamadı."); } finally { setBusy(false); } }
   async function startHost() { if (!session) return; setBusy(true); setError(""); try { await hostStart(session); } catch (e) { setError(e instanceof Error ? e.message : "Oyun başlatılamadı."); } finally { setBusy(false); } }
   function startSolo() { setSoloBoard(createBoard(level)); setSoloOpen([]); setSoloMatched([]); setSoloScore(0); setScreen("game"); }
   function leave() { window.localStorage.removeItem(SESSION_KEY); setSession(null); setState(null); setScreen("home"); }
   useEffect(() => { const timer = window.setInterval(() => setClientNow(Date.now()), 250); setClientNow(Date.now()); return () => window.clearInterval(timer); }, []);
   if (screen === "home") return <PageShell><div className="race-hero"><Link href="/" className="race-back">← Ana Menü</Link><div className="race-logo">GS</div><p className="race-kicker">GALATASARAY · CANLI OYUN</p><h1>HAFIZA<br /><span>YARIŞI ONLINE</span></h1><p>Aynı hafıza parkurunda arkadaşlarınla canlı yarış.</p><div className="race-actions"><button onClick={() => setScreen("setup")}>TEK OYUNCU</button><button onClick={() => setScreen("setup")}>ODA OLUŞTUR</button><button className="race-secondary" onClick={() => setScreen("join")}>ODAYA KATIL</button></div></div></PageShell>;
-  if (screen === "setup" && !session) return <PageShell><Setup title="Oyuncu ve seviye seç" name={name} setName={setName} level={level} setLevel={setLevel} maxPlayers={maxPlayers} setMaxPlayers={setMaxPlayers} rounds={rounds} setRounds={setRounds} onBack={() => setScreen("home")} onCreate={() => void enter(createRoom(name, maxPlayers, level, rounds))} onSolo={startSolo} busy={busy} error={error} /></PageShell>;
+  if (screen === "setup" && !session) return <PageShell><Setup title="Oyuncu ve seviye seç" name={name} setName={setName} level={level} setLevel={setLevel} maxPlayers={maxPlayers} setMaxPlayers={setMaxPlayers} onBack={() => setScreen("home")} onCreate={() => void enter(createRoom(name, maxPlayers, level, 3))} onSolo={startSolo} busy={busy} error={error} /></PageShell>;
   if (screen === "join" && !session) return <PageShell><div className="race-panel"><button className="race-back" onClick={() => setScreen("home")}>← Geri</button><p className="race-kicker">ODA KODU</p><h2>Yarışa katıl</h2><input className="race-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Oyuncu adın" maxLength={24} /><input className="race-input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="6 karakterli oda kodu" maxLength={6} /><button className="race-primary" disabled={!name.trim() || code.length !== 6 || busy} onClick={() => void enter(joinRoom(code, name))}>ODAYA KATIL</button>{error && <p className="race-error">{error}</p>}</div></PageShell>;
   if (screen === "lobby" && state && session) return <PageShell><div className="race-panel"><p className="race-kicker">BEKLEME ODASI</p><h2>Oda {state.room.code}</h2><p className="race-muted">Oyuncular · {state.players.length}/{state.room.max_players}</p><div className="race-players">{state.players.map((player) => <div key={player.id} className={player.id === session.playerId ? "race-player mine" : "race-player"}>👤 {player.name}{player.is_host && <small> HOST</small>}</div>)}</div>{isHost ? <button className="race-primary" disabled={state.players.length < 2 || busy} onClick={() => void startHost()}>OYUNU BAŞLAT</button> : <p className="race-muted">Oda sahibinin oyunu başlatması bekleniyor…</p>}<button className="race-link" onClick={leave}>Odadan çık</button>{error && <p className="race-error">{error}</p>}</div></PageShell>;
-  if (screen === "game" && state && session) return <PageShell><OnlineBoard state={state} session={session} selected={selected} setSelected={setSelected} remaining={remaining} onSubmit={async (a, b) => { setBusy(true); try { await submit(session, a, b); if (b >= 0) { getAudioManager().playRevealEffect(true); window.setTimeout(() => setSelected([]), 1300); } } catch (e) { setError(e instanceof Error ? e.message : "Cevap gönderilemedi."); } finally { setBusy(false); } }} busy={busy} error={error} onLeave={leave} /></PageShell>;
+  if (screen === "game" && state && session) return <PageShell><OnlineBoard state={state} session={session} serverNow={serverNow} remaining={remaining} onCard={async (index) => { setBusy(true); pendingFlipRef.current = true; try { await flipCard(session, index); } catch (e) { pendingFlipRef.current = false; setError(e instanceof Error ? e.message : "Kart açılamadı."); } finally { setBusy(false); } }} busy={busy} error={error} onLeave={leave} /></PageShell>;
   if (screen === "game" && soloBoard.length) return <SoloBoard board={soloBoard} open={soloOpen} matched={soloMatched} score={soloScore} onCard={(index) => { if (soloOpen.length >= 2 || soloMatched.includes(index) || soloOpen.includes(index)) return; const next = [...soloOpen, index]; setSoloOpen(next); if (next.length === 2) { const match = soloBoard[next[0]].pair === soloBoard[index].pair; window.setTimeout(() => { if (match) { setSoloMatched((v) => [...v, ...next]); setSoloScore((v) => v + 100); } setSoloOpen([]); }, match ? 260 : 720); } }} onBack={() => setScreen("home")} />;
   if (screen === "final" && state && session) return <PageShell><div className="race-panel"><p className="race-kicker">🏆 HAFIZA YARIŞI ŞAMPİYONU</p><h2>{sortPlayers(state.players)[0]?.name}</h2><Leaderboard players={state.players} me={session.playerId} final /><button className="race-primary" onClick={leave}>ANA MENÜ</button></div></PageShell>;
   return <PageShell><div className="race-panel"><p className="race-error">Oyun oturumu hazırlanıyor…</p></div></PageShell>;
 }
 
 function PageShell({ children }: { children: React.ReactNode }) { return <main className="memory-page race-page"><section className="memory-shell race-shell">{children}</section></main>; }
-type SetupProps = { title: string; name: string; setName: (value: string) => void; level: MemoryRaceLevel; setLevel: (value: MemoryRaceLevel) => void; maxPlayers: number; setMaxPlayers: (value: number) => void; rounds: number; setRounds: (value: number) => void; onBack: () => void; onCreate: () => void; onSolo: () => void; busy: boolean; error: string };
-function Setup({ title, name, setName, level, setLevel, maxPlayers, setMaxPlayers, rounds, setRounds, onBack, onCreate, onSolo, busy, error }: SetupProps) { return <div className="race-panel"><button className="race-back" onClick={onBack}>← Geri</button><p className="race-kicker">HAFIZA YARIŞI ONLINE</p><h2>{title}</h2><input className="race-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Oyuncu adın" maxLength={24} /><h3>Seviye</h3><div className="race-options">{Object.entries(MEMORY_RACE_LEVELS).map(([key, item]) => <button key={key} className={level === Number(key) ? "chosen" : ""} onClick={() => setLevel(Number(key) as MemoryRaceLevel)}>{item.label}<small>{item.cards} kart</small></button>)}</div><h3>Oyuncu sayısı</h3><div className="race-options">{MEMORY_RACE_MAX_PLAYERS.map((value) => <button key={value} className={maxPlayers === value ? "chosen" : ""} onClick={() => setMaxPlayers(value)}>{value}</button>)}</div><h3>Tur sayısı</h3><div className="race-options">{MEMORY_RACE_ROUNDS.map((value) => <button key={value} className={rounds === value ? "chosen" : ""} onClick={() => setRounds(value)}>{value}</button>)}</div><button className="race-primary" disabled={!name.trim() || busy} onClick={onCreate}>ODA OLUŞTUR</button><button className="race-secondary" disabled={!name.trim()} onClick={onSolo}>TEK OYUNCU BAŞLAT</button>{error && <p className="race-error">{error}</p>}</div>; }
-type OnlineBoardProps = { state: MemoryRaceState; session: MemoryRaceSession; selected: number[]; setSelected: (value: number[]) => void; remaining: number; onSubmit: (first: number, second: number) => Promise<void>; busy: boolean; error: string; onLeave: () => void };
-function OnlineBoard({ state, session, selected, setSelected, remaining, onSubmit, busy, error, onLeave }: OnlineBoardProps) { const level = MEMORY_RACE_LEVELS[state.room.level]; const cards = state.cards; return <div className="race-panel"><div className="race-board-head"><div><p className="race-kicker">TUR {state.room.current_round}/{state.room.round_count}</p><h2>{level.label}</h2></div><strong>{formatTime(remaining)}</strong></div><p className="race-muted">Kartları hatırla, iki kart seç. Her oyuncu kendi hamlesini yapar.</p><div className={`race-grid race-grid-${cards.length}`}>{cards.map((card) => <button key={card.index} className={`race-card ${card.matched ? "matched" : ""} ${selected.includes(card.index) ? "open" : ""}`} disabled={busy || card.matched} onClick={() => { const next = selected.length === 2 ? [card.index] : [...selected, card.index]; setSelected(next); void onSubmit(next[0], next.length === 2 ? next[1] : -1); }}><span className="race-card-inner"><span className="race-card-front">?</span><span className="race-card-back">{getMemoryRaceCardVisual(state.room.level, card.value)}</span></span></button>)}</div><Leaderboard players={state.players} me={session.playerId} /><button className="race-link" onClick={onLeave}>Oyundan çık</button>{error && <p className="race-error">{error}</p>}</div>; }
-function Leaderboard({ players, me, final = false }: { players: MemoryRacePlayer[]; me: string; final?: boolean }) { return <div className={final ? "race-leaderboard final" : "race-leaderboard"}>{sortPlayers(players).map((player, index) => <div key={player.id} className={player.id === me ? "mine" : ""}><b>{index + 1}.</b><span>{player.name}{player.id === me && " · SEN"}</span><strong>{player.score}</strong><small>{player.correct} doğru · {player.wrong} yanlış</small></div>)}</div>; }
+type SetupProps = { title: string; name: string; setName: (value: string) => void; level: MemoryRaceLevel; setLevel: (value: MemoryRaceLevel) => void; maxPlayers: number; setMaxPlayers: (value: number) => void; onBack: () => void; onCreate: () => void; onSolo: () => void; busy: boolean; error: string };
+function Setup({ title, name, setName, level, setLevel, maxPlayers, setMaxPlayers, onBack, onCreate, onSolo, busy, error }: SetupProps) { return <div className="race-panel"><button className="race-back" onClick={onBack}>← Geri</button><p className="race-kicker">HAFIZA YARIŞI ONLINE</p><h2>{title}</h2><input className="race-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Oyuncu adın" maxLength={24} /><h3>Seviye</h3><div className="race-options">{Object.entries(MEMORY_RACE_LEVELS).map(([key, item]) => <button key={key} className={level === Number(key) ? "chosen" : ""} onClick={() => setLevel(Number(key) as MemoryRaceLevel)}>{item.label}<small>{item.cards} kart</small></button>)}</div><h3>Oyuncu sayısı</h3><div className="race-options">{MEMORY_RACE_MAX_PLAYERS.map((value) => <button key={value} className={maxPlayers === value ? "chosen" : ""} onClick={() => setMaxPlayers(value)}>{value}</button>)}</div><button className="race-primary" disabled={!name.trim() || busy} onClick={onCreate}>ODA OLUŞTUR</button><button className="race-secondary" disabled={!name.trim()} onClick={onSolo}>TEK OYUNCU BAŞLAT</button>{error && <p className="race-error">{error}</p>}</div>; }
+type OnlineBoardProps = { state: MemoryRaceState; session: MemoryRaceSession; serverNow: number; remaining: number; onCard: (index: number) => Promise<void>; busy: boolean; error: string; onLeave: () => void };
+function OnlineBoard({ state, session, serverNow, remaining, onCard, busy, error, onLeave }: OnlineBoardProps) {
+  const level = MEMORY_RACE_LEVELS[state.room.level];
+  const cards = state.cards;
+  const currentPlayer = state.players.find((player) => player.id === state.room.current_player_id);
+  const isMyTurn = state.room.current_player_id === session.playerId;
+  const revealActive = state.room.reveal_until !== null && Date.parse(state.room.reveal_until) > serverNow;
+  const canSelect = isMyTurn && !busy && !revealActive && state.room.second_card_index === null;
+  return <div className="race-panel">
+    <div className="race-board-head"><div><p className="race-kicker">ORTAK HAFIZA TAHTASI · TUR {state.room.turn_number}</p><h2>{level.label}</h2></div><strong>{formatTime(remaining)}</strong></div>
+    <div className={isMyTurn ? "race-turn active" : "race-turn"}><strong>{isMyTurn ? "SIRA SENDE" : `SIRA: ${currentPlayer?.name ?? "..."}`}</strong><span>{isMyTurn ? "İki kart seç." : `${currentPlayer?.name ?? "Oyuncu"} kart seçiyor, sen de açık kartları görüyorsun."`}</span></div>
+    <p className="race-muted">Herkes aynı kart tahtasını görür. Doğru eşleşmede sıra sende kalır.</p>
+    <div className={`race-grid race-grid-${cards.length}`}>{cards.map((card) => <button key={card.index} className={`race-card ${card.matched ? "matched" : ""} ${card.value !== null ? "open" : ""}`} disabled={!canSelect || card.matched || card.value !== null} onClick={() => void onCard(card.index)}><span className="race-card-inner"><span className="race-card-front">?</span><span className="race-card-back">{getMemoryRaceCardVisual(state.room.level, card.value)}</span></span></button>)}</div>
+    <Leaderboard players={state.players} me={session.playerId} activePlayerId={state.room.current_player_id} /><button className="race-link" onClick={onLeave}>Oyundan çık</button>{error && <p className="race-error">{error}</p>}
+  </div>;
+}
+function Leaderboard({ players, me, activePlayerId, final = false }: { players: MemoryRacePlayer[]; me: string; activePlayerId?: string | null; final?: boolean }) { return <div className={final ? "race-leaderboard final" : "race-leaderboard"}>{sortPlayers(players).map((player, index) => <div key={player.id} className={`${player.id === me ? "mine " : ""}${player.id === activePlayerId ? "active-turn" : ""}`}><b>{index + 1}.</b><span>{player.name}{player.id === me && " · SEN"}{player.id === activePlayerId && " · SIRA"}</span><strong>{player.score}</strong><small>{player.correct} doğru · {player.wrong} yanlış</small></div>)}</div>; }
 type SoloBoardProps = { board: ReturnType<typeof createBoard>; open: number[]; matched: number[]; score: number; onCard: (index: number) => void; onBack: () => void };
 function SoloBoard({ board, open, matched, score, onCard, onBack }: SoloBoardProps) { return <PageShell><div className="race-panel"><button className="race-back" onClick={onBack}>← Ana Menü</button><div className="race-board-head"><div><p className="race-kicker">TEK OYUNCU</p><h2>HAFIZA YARIŞI</h2></div><strong>{score}</strong></div><div className={`race-grid race-grid-${board.length}`}>{board.map((card, index) => <button key={card.id} className={`race-card ${open.includes(index) || matched.includes(index) ? "open" : ""} ${matched.includes(index) ? "matched" : ""}`} onClick={() => onCard(index)}><span className="race-card-inner"><span className="race-card-front">?</span><span className="race-card-back">{open.includes(index) || matched.includes(index) ? card.value : "?"}</span></span></button>)}</div></div></PageShell>; }

@@ -4,7 +4,7 @@ import { multiplayerRpcVoid } from "@/lib/multiplayer-quiz/api";
 import type { MemoryRaceLevel, MemoryRaceSession } from "./config";
 
 export type MemoryRacePlayer = { id: string; name: string; seat: number; score: number; correct: number; wrong: number; is_host: boolean };
-export type MemoryRaceState = { server_now: string; room: { id: string; code: string; status: string; max_players: number; level: MemoryRaceLevel; round_count: number; current_round: number; starts_at: string | null; ends_at: string | null }; players: MemoryRacePlayer[]; cards: Array<{ index: number; value: string | null; matched: boolean }>; };
+export type MemoryRaceState = { server_now: string; room: { id: string; code: string; status: string; max_players: number; level: MemoryRaceLevel; round_count: number; current_round: number; starts_at: string | null; ends_at: string | null; current_player_id: string | null; turn_number: number; first_card_index: number | null; second_card_index: number | null; reveal_until: string | null }; players: MemoryRacePlayer[]; cards: Array<{ index: number; value: string | null; matched: boolean; matched_by_player_id: string | null }>; };
 export type MemoryRaceCredentials = { room_id: string; player_id: string; token: string; code: string };
 
 export class MemoryRaceRpcError extends Error {
@@ -75,6 +75,7 @@ function normalizeMemoryRaceState(data: unknown): MemoryRaceState {
       index: Number(card.index),
       value: card.value === null || card.value === undefined ? null : String(card.value),
       matched: Boolean(card.matched),
+      matched_by_player_id: card.matched_by_player_id === null || card.matched_by_player_id === undefined ? null : String(card.matched_by_player_id),
     };
   });
 
@@ -90,6 +91,11 @@ function normalizeMemoryRaceState(data: unknown): MemoryRaceState {
       current_round: room.current_round,
       starts_at: room.starts_at === null || room.starts_at === undefined ? null : String(room.starts_at),
       ends_at: room.ends_at === null || room.ends_at === undefined ? null : String(room.ends_at),
+      current_player_id: room.current_player_id === null || room.current_player_id === undefined ? null : String(room.current_player_id),
+      turn_number: Number(room.turn_number ?? 0),
+      first_card_index: room.first_card_index === null || room.first_card_index === undefined ? null : Number(room.first_card_index),
+      second_card_index: room.second_card_index === null || room.second_card_index === undefined ? null : Number(room.second_card_index),
+      reveal_until: room.reveal_until === null || room.reveal_until === undefined ? null : String(room.reveal_until),
     },
     players: normalizedPlayers,
     cards: normalizedCards,
@@ -145,5 +151,6 @@ export async function getState(session: MemoryRaceSession): Promise<{ state: Mem
   }
 }
 export const hostStart = (session: MemoryRaceSession) => multiplayerRpcVoid("memory_race_host_start", { p_room: session.roomId, p_player: session.playerId, p_token: session.token });
+export const flipCard = (session: MemoryRaceSession, cardIndex: number) => multiplayerRpcVoid("memory_race_flip_card", { p_room: session.roomId, p_player: session.playerId, p_token: session.token, p_card_index: cardIndex });
 export const submit = (session: MemoryRaceSession, first: number, second: number) => multiplayerRpcVoid("memory_race_submit", { p_room: session.roomId, p_player: session.playerId, p_token: session.token, p_first: first, p_second: second });
 export const tick = (session: MemoryRaceSession) => multiplayerRpcVoid("memory_race_tick", { p_room: session.roomId, p_player: session.playerId, p_token: session.token });
