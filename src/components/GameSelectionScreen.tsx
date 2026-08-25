@@ -61,6 +61,17 @@ export function GameSelectionScreen() {
               <span className="game-card-cta">Hafıza Yarışı Oyna <b aria-hidden="true">→</b></span>
             </div>
           </Link>
+
+          <Link className="game-card game-card-memory" href="/hafiza-yarisi-online">
+            <div className="game-card-memory-pattern" aria-hidden="true" />
+            <span className="game-card-badge">2–8 OYUNCU · CANLI</span>
+            <span className="game-card-mark" aria-hidden="true">🏆</span>
+            <div className="game-card-content">
+              <h2>Hafıza Yarışı Online</h2>
+              <p>Aynı hafıza parkurunda arkadaşlarınla canlı yarış.</p>
+              <span className="game-card-cta">Online Yarışa Katıl <b aria-hidden="true">→</b></span>
+            </div>
+          </Link>
         </div>
 
         <p className="selection-footnote">İki oyun · Tek futbol tutkusu</p>
