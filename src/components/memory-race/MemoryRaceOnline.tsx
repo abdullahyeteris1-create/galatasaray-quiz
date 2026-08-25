@@ -11,6 +11,17 @@ import { createRoom, getState, hostStart, joinRoom, submit, tick, type MemoryRac
 const SESSION_KEY = "gs_memory_race_session";
 type Screen = "home" | "setup" | "join" | "lobby" | "game" | "final";
 
+function parseSession(raw: string | null): MemoryRaceSession | null {
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as Partial<MemoryRaceSession>;
+    if (typeof value.roomId !== "string" || typeof value.playerId !== "string" || typeof value.token !== "string" || typeof value.code !== "string") return null;
+    return { roomId: value.roomId, playerId: value.playerId, token: value.token, code: value.code };
+  } catch {
+    return null;
+  }
+}
+
 function formatTime(value: number) { return `${Math.max(0, Math.floor(value / 60)).toString().padStart(2, "0")}:${(Math.max(0, value) % 60).toString().padStart(2, "0")}`; }
 function sortPlayers(players: MemoryRacePlayer[]) { return [...players].sort((a, b) => b.score - a.score || b.correct - a.correct || a.wrong - b.wrong); }
 
@@ -24,8 +35,8 @@ export function MemoryRaceOnline() {
   const [soloBoard, setSoloBoard] = useState<ReturnType<typeof createBoard>>([]); const [soloOpen, setSoloOpen] = useState<number[]>([]); const [soloMatched, setSoloMatched] = useState<number[]>([]); const [soloScore, setSoloScore] = useState(0);
   const [lastRound, setLastRound] = useState(0);
 
-  const refresh = useCallback(async (activeSession = session) => { if (!activeSession) return; try { const result = await getState(activeSession); setState(result.state); setOffset(result.serverOffsetMs); setError(""); setScreen(result.state.room.status === "finished" ? "final" : result.state.room.status === "waiting" ? "lobby" : "game"); } catch (e) { setError(e instanceof Error ? e.message : "Oda durumu alınamadı."); } }, [session]);
-  useEffect(() => { try { const raw = window.localStorage.getItem(SESSION_KEY); if (raw) { const restored = JSON.parse(raw) as MemoryRaceSession; setSession(restored); void refresh(restored); } } catch { /* eski/bozuk oturum yok sayılır */ } }, [refresh]);
+  const refresh = useCallback(async (activeSession = session) => { if (!activeSession) return; try { const result = await getState(activeSession); setState(result.state); setOffset(result.serverOffsetMs); setError(""); setScreen(result.state.room.status === "finished" ? "final" : result.state.room.status === "waiting" ? "lobby" : "game"); } catch (e) { if (process.env.NODE_ENV !== "production") console.error("Hafıza Yarışı oda yenileme hatası", e); setError("Oda durumu alınamadı. Lütfen tekrar deneyin."); } }, [session]);
+  useEffect(() => { const restored = parseSession(window.localStorage.getItem(SESSION_KEY)); if (restored) { setSession(restored); void refresh(restored); } else { window.localStorage.removeItem(SESSION_KEY); } }, [refresh]);
   useEffect(() => { if (!session) return; const timer = window.setInterval(() => { void refresh(); void tick(session).catch(() => undefined); }, 800); return () => window.clearInterval(timer); }, [session, refresh]);
   useEffect(() => { if (state?.room.current_round && state.room.current_round !== lastRound) { setSelected([]); setLastRound(state.room.current_round); } }, [state?.room.current_round, lastRound]);
 
