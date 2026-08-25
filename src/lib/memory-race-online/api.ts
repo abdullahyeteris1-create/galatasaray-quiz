@@ -7,6 +7,13 @@ export type MemoryRacePlayer = { id: string; name: string; seat: number; score: 
 export type MemoryRaceState = { server_now: string; room: { id: string; code: string; status: string; max_players: number; level: MemoryRaceLevel; round_count: number; current_round: number; starts_at: string | null; ends_at: string | null }; players: MemoryRacePlayer[]; cards: Array<{ index: number; value: string | null; matched: boolean }>; };
 export type MemoryRaceCredentials = { room_id: string; player_id: string; token: string; code: string };
 
+export class MemoryRaceRpcError extends Error {
+  constructor(public readonly code: string | undefined, message: string) {
+    super(message);
+    this.name = "MemoryRaceRpcError";
+  }
+}
+
 type RecordValue = Record<string, unknown>;
 
 function isRecord(value: unknown): value is RecordValue {
@@ -14,7 +21,7 @@ function isRecord(value: unknown): value is RecordValue {
 }
 
 function rpcErrorMessage(error: unknown) {
-  if (!isRecord(error)) return "Supabase RPC hatası";
+  if (!isRecord(error)) return { code: undefined, message: "Supabase RPC hatası", details: undefined, hint: undefined };
   return {
     code: typeof error.code === "string" ? error.code : undefined,
     message: typeof error.message === "string" ? error.message : undefined,
@@ -122,7 +129,8 @@ export async function getState(session: MemoryRaceSession): Promise<{ state: Mem
 
   if (error) {
     logRpcError("memory_race_get_state", error);
-    throw new Error("Oda durumu alınamadı.");
+    const details = rpcErrorMessage(error);
+    throw new MemoryRaceRpcError(details.code, "Oda durumu alınamadı.");
   }
 
   try {
@@ -133,7 +141,7 @@ export async function getState(session: MemoryRaceSession): Promise<{ state: Mem
     };
   } catch (error) {
     logRpcError("memory_race_get_state response", error);
-    throw new Error("Oda durumu alınamadı.");
+    throw new MemoryRaceRpcError(undefined, "Oda durumu alınamadı.");
   }
 }
 export const hostStart = (session: MemoryRaceSession) => multiplayerRpcVoid("memory_race_host_start", { p_room: session.roomId, p_player: session.playerId, p_token: session.token });

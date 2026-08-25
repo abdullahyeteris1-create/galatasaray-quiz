@@ -2,11 +2,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getAudioManager } from "@/lib/audio/audioManager";
 import { getMemoryRaceCardVisual } from "@/lib/memory-race/cardVisuals";
 import { createBoard, MEMORY_RACE_LEVELS, MEMORY_RACE_MAX_PLAYERS, MEMORY_RACE_ROUNDS, type MemoryRaceLevel, type MemoryRaceSession } from "@/lib/memory-race-online/config";
-import { createRoom, getState, hostStart, joinRoom, submit, tick, type MemoryRacePlayer, type MemoryRaceState } from "@/lib/memory-race-online/api";
+import { createRoom, getState, hostStart, joinRoom, MemoryRaceRpcError, submit, tick, type MemoryRacePlayer, type MemoryRaceState } from "@/lib/memory-race-online/api";
 
 const SESSION_KEY = "gs_memory_race_session";
 type Screen = "home" | "setup" | "join" | "lobby" | "game" | "final";
@@ -22,6 +22,10 @@ function parseSession(raw: string | null): MemoryRaceSession | null {
   }
 }
 
+function isTerminalSessionError(error: unknown) {
+  return error instanceof MemoryRaceRpcError && (error.code === "UNAUTHORIZED_PLAYER" || error.code === "ROOM_NOT_FOUND");
+}
+
 function formatTime(value: number) { return `${Math.max(0, Math.floor(value / 60)).toString().padStart(2, "0")}:${(Math.max(0, value) % 60).toString().padStart(2, "0")}`; }
 function sortPlayers(players: MemoryRacePlayer[]) { return [...players].sort((a, b) => b.score - a.score || b.correct - a.correct || a.wrong - b.wrong); }
 
@@ -34,25 +38,138 @@ export function MemoryRaceOnline() {
   const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const [selected, setSelected] = useState<number[]>([]); const [offset, setOffset] = useState(0); const [clientNow, setClientNow] = useState(0);
   const [soloBoard, setSoloBoard] = useState<ReturnType<typeof createBoard>>([]); const [soloOpen, setSoloOpen] = useState<number[]>([]); const [soloMatched, setSoloMatched] = useState<number[]>([]); const [soloScore, setSoloScore] = useState(0);
   const [lastRound, setLastRound] = useState(0);
+  const pollingInFlightRef = useRef(false);
+  const tickInFlightRef = useRef(false);
+  const currentStateRef = useRef<MemoryRaceState | null>(null);
+  const pollingGenerationRef = useRef(0);
 
-  const refresh = useCallback(async (activeSession = session) => { if (!activeSession) return; try { const result = await getState(activeSession); setState(result.state); setOffset(result.serverOffsetMs); setError(""); setScreen(result.state.room.status === "finished" ? "final" : result.state.room.status === "waiting" ? "lobby" : "game"); } catch (e) { if (process.env.NODE_ENV !== "production") console.error("Hafıza Yarışı oda yenileme hatası", e); setError("Oda durumu alınamadı. Lütfen tekrar deneyin."); } }, [session]);
-  useEffect(() => { const restored = parseSession(window.localStorage.getItem(SESSION_KEY)); if (restored) { setSession(restored); void refresh(restored); } else { window.localStorage.removeItem(SESSION_KEY); } }, [refresh]);
-  useEffect(() => { if (!session) return; const timer = window.setInterval(() => { void refresh(); void tick(session).catch(() => undefined); }, 800); return () => window.clearInterval(timer); }, [session, refresh]);
+  const applyState = useCallback((nextState: MemoryRaceState, serverOffsetMs: number) => {
+    currentStateRef.current = nextState;
+    setState(nextState);
+    setOffset(serverOffsetMs);
+    setError("");
+    setScreen(nextState.room.status === "finished" ? "final" : nextState.room.status === "waiting" ? "lobby" : "game");
+  }, []);
+
+  const pollState = useCallback(async (activeSession: MemoryRaceSession) => {
+    const result = await getState(activeSession);
+    applyState(result.state, result.serverOffsetMs);
+    return result.state.room.status;
+  }, [applyState]);
+
+  const serverNow = clientNow + offset;
+  const remaining = state?.room.ends_at && clientNow ? Math.ceil((Date.parse(state.room.ends_at) - serverNow) / 1000) : 0;
+  const me = state?.players.find((player) => player.id === session?.playerId);
+  const isHost = !!me?.is_host;
+  const sessionCode = session?.code ?? "";
+
+  useEffect(() => {
+    const restored = parseSession(window.localStorage.getItem(SESSION_KEY));
+    if (restored) setSession(restored);
+    else window.localStorage.removeItem(SESSION_KEY);
+  }, []);
+
+  useEffect(() => {
+    const roomId = session?.roomId;
+    const playerId = session?.playerId;
+    const token = session?.token;
+    const code = sessionCode;
+    if (!roomId || !playerId || !token) return;
+
+    const activeSession: MemoryRaceSession = { roomId, playerId, token, code };
+    const generation = ++pollingGenerationRef.current;
+    let cancelled = false;
+    let timer: number | null = null;
+
+    const schedule = (delay: number) => {
+      if (!cancelled && pollingGenerationRef.current === generation) timer = window.setTimeout(() => void poll(), delay);
+    };
+
+    const poll = async () => {
+      if (cancelled || pollingGenerationRef.current !== generation) return;
+      if (pollingInFlightRef.current) {
+        schedule(100);
+        return;
+      }
+
+      pollingInFlightRef.current = true;
+      if (process.env.NODE_ENV !== "production") console.debug("[memory-race] get_state start");
+      try {
+        const status = await pollState(activeSession);
+        if (process.env.NODE_ENV !== "production") console.debug("[memory-race] get_state end", status);
+        if (status !== "finished") schedule(status === "waiting" ? 1200 : 800);
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") console.error("[memory-race] get_state failed", error);
+        if (isTerminalSessionError(error)) {
+          window.localStorage.removeItem(SESSION_KEY);
+          setSession(null);
+          setState(null);
+          currentStateRef.current = null;
+          setScreen("home");
+          setError("Oda oturumunuz artık geçerli değil.");
+        } else {
+          setError("Bağlantı geçici olarak kesildi. Yeniden deneniyor…");
+          schedule(2000);
+        }
+      } finally {
+        pollingInFlightRef.current = false;
+      }
+    };
+
+    void poll();
+    return () => {
+      cancelled = true;
+      if (timer !== null) window.clearTimeout(timer);
+    };
+  }, [session?.roomId, session?.playerId, session?.token, sessionCode, pollState]);
+
+  useEffect(() => {
+    const roomId = session?.roomId;
+    const playerId = session?.playerId;
+    const token = session?.token;
+    const code = sessionCode;
+    const status = state?.room.status;
+    if (!roomId || !playerId || !token || status !== "playing" || !isHost) return;
+
+    const activeSession: MemoryRaceSession = { roomId, playerId, token, code };
+
+    let cancelled = false;
+    let timer: number | null = null;
+    const runTick = async () => {
+      if (cancelled) return;
+      if (tickInFlightRef.current) {
+        timer = window.setTimeout(() => void runTick(), 100);
+        return;
+      }
+      tickInFlightRef.current = true;
+      try {
+        await tick(activeSession);
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") console.error("[memory-race] tick failed", error);
+      } finally {
+        tickInFlightRef.current = false;
+        if (!cancelled) timer = window.setTimeout(() => void runTick(), 1000);
+      }
+    };
+
+    void runTick();
+    return () => {
+      cancelled = true;
+      if (timer !== null) window.clearTimeout(timer);
+    };
+  }, [session?.roomId, session?.playerId, session?.token, sessionCode, state?.room.status, isHost]);
   useEffect(() => { if (state?.room.current_round && state.room.current_round !== lastRound) { setSelected([]); setLastRound(state.room.current_round); } }, [state?.room.current_round, lastRound]);
 
-  async function enter(request: Promise<{ room_id: string; player_id: string; token: string; code: string }>) { setBusy(true); setError(""); try { const result = await request; const next = { roomId: result.room_id, playerId: result.player_id, token: result.token, code: result.code }; window.localStorage.setItem(SESSION_KEY, JSON.stringify(next)); setSession(next); await refresh(next); } catch (e) { setError(e instanceof Error ? e.message : "Odaya bağlanılamadı."); } finally { setBusy(false); } }
+  async function enter(request: Promise<{ room_id: string; player_id: string; token: string; code: string }>) { setBusy(true); setError(""); try { const result = await request; const next = { roomId: result.room_id, playerId: result.player_id, token: result.token, code: result.code }; window.localStorage.setItem(SESSION_KEY, JSON.stringify(next)); setSession(next); setScreen("lobby"); } catch (e) { setError(e instanceof Error ? e.message : "Odaya bağlanılamadı."); } finally { setBusy(false); } }
+  async function startHost() { if (!session) return; setBusy(true); setError(""); try { await hostStart(session); } catch (e) { setError(e instanceof Error ? e.message : "Oyun başlatılamadı."); } finally { setBusy(false); } }
   function startSolo() { setSoloBoard(createBoard(level)); setSoloOpen([]); setSoloMatched([]); setSoloScore(0); setScreen("game"); }
   function leave() { window.localStorage.removeItem(SESSION_KEY); setSession(null); setState(null); setScreen("home"); }
   useEffect(() => { const timer = window.setInterval(() => setClientNow(Date.now()), 250); setClientNow(Date.now()); return () => window.clearInterval(timer); }, []);
-  const serverNow = clientNow + offset; const remaining = state?.room.ends_at && clientNow ? Math.ceil((Date.parse(state.room.ends_at) - serverNow) / 1000) : 0;
-  const me = state?.players.find((player) => player.id === session?.playerId);
-  const isHost = !!me?.is_host;
-
   if (screen === "home") return <PageShell><div className="race-hero"><Link href="/" className="race-back">← Ana Menü</Link><div className="race-logo">GS</div><p className="race-kicker">GALATASARAY · CANLI OYUN</p><h1>HAFIZA<br /><span>YARIŞI ONLINE</span></h1><p>Aynı hafıza parkurunda arkadaşlarınla canlı yarış.</p><div className="race-actions"><button onClick={() => setScreen("setup")}>TEK OYUNCU</button><button onClick={() => setScreen("setup")}>ODA OLUŞTUR</button><button className="race-secondary" onClick={() => setScreen("join")}>ODAYA KATIL</button></div></div></PageShell>;
   if (screen === "setup" && !session) return <PageShell><Setup title="Oyuncu ve seviye seç" name={name} setName={setName} level={level} setLevel={setLevel} maxPlayers={maxPlayers} setMaxPlayers={setMaxPlayers} rounds={rounds} setRounds={setRounds} onBack={() => setScreen("home")} onCreate={() => void enter(createRoom(name, maxPlayers, level, rounds))} onSolo={startSolo} busy={busy} error={error} /></PageShell>;
   if (screen === "join" && !session) return <PageShell><div className="race-panel"><button className="race-back" onClick={() => setScreen("home")}>← Geri</button><p className="race-kicker">ODA KODU</p><h2>Yarışa katıl</h2><input className="race-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Oyuncu adın" maxLength={24} /><input className="race-input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="6 karakterli oda kodu" maxLength={6} /><button className="race-primary" disabled={!name.trim() || code.length !== 6 || busy} onClick={() => void enter(joinRoom(code, name))}>ODAYA KATIL</button>{error && <p className="race-error">{error}</p>}</div></PageShell>;
-  if (screen === "lobby" && state && session) return <PageShell><div className="race-panel"><p className="race-kicker">BEKLEME ODASI</p><h2>Oda {state.room.code}</h2><p className="race-muted">Oyuncular · {state.players.length}/{state.room.max_players}</p><div className="race-players">{state.players.map((player) => <div key={player.id} className={player.id === session.playerId ? "race-player mine" : "race-player"}>👤 {player.name}{player.is_host && <small> HOST</small>}</div>)}</div>{isHost ? <button className="race-primary" disabled={state.players.length < 2 || busy} onClick={() => void hostStart(session).then(() => refresh())}>OYUNU BAŞLAT</button> : <p className="race-muted">Oda sahibinin oyunu başlatması bekleniyor…</p>}<button className="race-link" onClick={leave}>Odadan çık</button>{error && <p className="race-error">{error}</p>}</div></PageShell>;
-  if (screen === "game" && state && session) return <PageShell><OnlineBoard state={state} session={session} selected={selected} setSelected={setSelected} remaining={remaining} onSubmit={async (a, b) => { setBusy(true); try { await submit(session, a, b); if (b >= 0) { getAudioManager().playRevealEffect(true); window.setTimeout(() => setSelected([]), 1300); } await refresh(); } catch (e) { setError(e instanceof Error ? e.message : "Cevap gönderilemedi."); } finally { setBusy(false); } }} busy={busy} error={error} onLeave={leave} /></PageShell>;
+  if (screen === "lobby" && state && session) return <PageShell><div className="race-panel"><p className="race-kicker">BEKLEME ODASI</p><h2>Oda {state.room.code}</h2><p className="race-muted">Oyuncular · {state.players.length}/{state.room.max_players}</p><div className="race-players">{state.players.map((player) => <div key={player.id} className={player.id === session.playerId ? "race-player mine" : "race-player"}>👤 {player.name}{player.is_host && <small> HOST</small>}</div>)}</div>{isHost ? <button className="race-primary" disabled={state.players.length < 2 || busy} onClick={() => void startHost()}>OYUNU BAŞLAT</button> : <p className="race-muted">Oda sahibinin oyunu başlatması bekleniyor…</p>}<button className="race-link" onClick={leave}>Odadan çık</button>{error && <p className="race-error">{error}</p>}</div></PageShell>;
+  if (screen === "game" && state && session) return <PageShell><OnlineBoard state={state} session={session} selected={selected} setSelected={setSelected} remaining={remaining} onSubmit={async (a, b) => { setBusy(true); try { await submit(session, a, b); if (b >= 0) { getAudioManager().playRevealEffect(true); window.setTimeout(() => setSelected([]), 1300); } } catch (e) { setError(e instanceof Error ? e.message : "Cevap gönderilemedi."); } finally { setBusy(false); } }} busy={busy} error={error} onLeave={leave} /></PageShell>;
   if (screen === "game" && soloBoard.length) return <SoloBoard board={soloBoard} open={soloOpen} matched={soloMatched} score={soloScore} onCard={(index) => { if (soloOpen.length >= 2 || soloMatched.includes(index) || soloOpen.includes(index)) return; const next = [...soloOpen, index]; setSoloOpen(next); if (next.length === 2) { const match = soloBoard[next[0]].pair === soloBoard[index].pair; window.setTimeout(() => { if (match) { setSoloMatched((v) => [...v, ...next]); setSoloScore((v) => v + 100); } setSoloOpen([]); }, match ? 260 : 720); } }} onBack={() => setScreen("home")} />;
   if (screen === "final" && state && session) return <PageShell><div className="race-panel"><p className="race-kicker">🏆 HAFIZA YARIŞI ŞAMPİYONU</p><h2>{sortPlayers(state.players)[0]?.name}</h2><Leaderboard players={state.players} me={session.playerId} final /><button className="race-primary" onClick={leave}>ANA MENÜ</button></div></PageShell>;
   return <PageShell><div className="race-panel"><p className="race-error">Oyun oturumu hazırlanıyor…</p></div></PageShell>;
