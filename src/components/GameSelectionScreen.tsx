@@ -72,6 +72,16 @@ export function GameSelectionScreen() {
               <span className="game-card-cta">Online Yarışa Katıl <b aria-hidden="true">→</b></span>
             </div>
           </Link>
+
+          <Link className="game-card game-card-arithmetic" href="/mental-aritmetik-duellosu">
+            <span className="game-card-badge">2–8 OYUNCU · HIZ</span>
+            <span className="game-card-mark" aria-hidden="true">±</span>
+            <div className="game-card-content">
+              <h2>Mental Aritmetik Düellosu</h2>
+              <p>Aynı işlemi arkadaşlarından önce çöz, hızını göster.</p>
+              <span className="game-card-cta">Düelloya Katıl <b aria-hidden="true">→</b></span>
+            </div>
+          </Link>
         </div>
 
         <p className="selection-footnote">İki oyun · Tek futbol tutkusu</p>
