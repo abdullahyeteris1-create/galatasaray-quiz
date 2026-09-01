@@ -140,6 +140,7 @@
 .memory-error { margin: 12px 0; color: #ff9296; font-size: 11px; text-align: center; }
 .race-page { background: radial-gradient(circle at 18% -8%, rgba(91,77,190,.24), transparent 34%), radial-gradient(circle at 92% 12%, rgba(43,116,193,.18), transparent 30%), linear-gradient(145deg, #070816 0%, #0c1025 48%, #050711 100%); }
 .race-shell { width: min(100%, 720px); }
+.race-shell.race-shell-board { width: min(96vw, 1400px); }
 .race-page .race-shell { background: linear-gradient(160deg, rgba(19,24,55,.84), rgba(8,12,29,.9)); border-color: rgba(144,160,255,.18); box-shadow: 0 35px 90px rgba(0,0,0,.5), 0 0 70px rgba(72,70,176,.1); }
 .race-hero, .race-panel { padding: 18px 0; }
 .race-hero { min-height: 680px; display: flex; flex-direction: column; justify-content: center; }
@@ -201,9 +202,40 @@
 .race-leaderboard small { grid-column: 2 / -1; color: #bac5df; font-size: 9px; }
 .race-leaderboard.final { margin: 20px 0; }
 .race-error { color: #ff9296; font-size: 11px; text-align: center; }
+.race-online-board .race-grid { width: 100%; max-width: 100%; margin-inline: auto; grid-template-columns: repeat(4, minmax(52px, 1fr)); gap: clamp(5px, 1.5vw, 8px); }
+.race-online-board .race-grid-20, .race-online-board .race-grid-24, .race-online-board .race-grid-32 { grid-template-columns: repeat(4, minmax(52px, 1fr)); }
+.race-online-board .race-grid-40, .race-online-board .race-grid-60 { grid-template-columns: repeat(5, minmax(52px, 1fr)); }
+.race-online-board .race-card { border-radius: clamp(10px, 1.1vw, 16px); transition: transform .18s ease, filter .18s ease; }
+.race-online-board .race-card:disabled { opacity: 1; filter: none; }
+.race-online-board .race-card-front, .race-online-board .race-card-back { overflow: hidden; border-radius: inherit; }
+.race-online-board .race-card-front { border: 2px solid rgba(190,211,255,.66); background: linear-gradient(145deg, #7139c6 0%, #4d4ee0 48%, #177fdc 100%); box-shadow: 0 9px 24px rgba(39,42,158,.45), 0 0 18px rgba(68,112,255,.2), inset 0 1px 0 rgba(255,255,255,.38), inset 0 -10px 22px rgba(18,19,82,.28); font-size: clamp(1.8rem, 3.2vw, 3rem); text-shadow: 0 3px 16px rgba(10,13,72,.82), 0 0 18px rgba(203,224,255,.32); }
+.race-online-board .race-card-front::before { position: absolute; inset: 0 8% 48%; border-radius: 45% 45% 55% 55%; background: linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,0)); content: ""; pointer-events: none; transform: translateY(-18%); }
+.race-online-board .race-card-back { border: 2px solid rgba(78,218,255,.84); background: radial-gradient(circle at 50% 35%, rgba(45,118,201,.48), transparent 55%), linear-gradient(145deg, #0d183c, #172d66 58%, #0d1a42); box-shadow: 0 10px 28px rgba(5,12,45,.56), 0 0 20px rgba(43,185,255,.25), inset 0 1px 0 rgba(212,246,255,.28), inset 0 -10px 24px rgba(3,10,34,.34); font-size: clamp(2.25rem, 5.2vw, 4.25rem); }
+.race-online-board .race-card:not(.open):not(.matched):hover .race-card-inner { transform: none; }
+.race-online-board .race-card:not(:disabled):not(.open):not(.matched):hover { filter: brightness(1.08); transform: translateY(-2px) scale(1.025); }
+.race-online-board .race-card:not(:disabled):not(.open):not(.matched):hover .race-card-front { border-color: rgba(222,238,255,.9); box-shadow: 0 12px 34px rgba(71,82,238,.58), 0 0 24px rgba(54,161,255,.35), inset 0 1px 0 rgba(255,255,255,.42); }
+.race-online-board .race-card:not(:disabled):active { transform: scale(.97); }
+.race-online-board .race-card.matched .race-card-back { opacity: 1; border-color: #70f2cd; background: radial-gradient(circle at 50% 35%, rgba(68,214,183,.36), transparent 58%), linear-gradient(145deg, #133c52, #246b65 54%, #315d55); box-shadow: 0 9px 30px rgba(48,219,172,.3), 0 0 22px rgba(77,231,255,.34), inset 0 1px 0 rgba(225,255,247,.32); animation: race-online-match .55s ease-out; }
+.race-online-board .race-leaderboard { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; }
+@keyframes race-online-match { 0%, 100% { transform: rotateY(180deg) scale(1); } 50% { transform: rotateY(180deg) scale(1.06); } }
+@media (min-width: 520px) {
+  .race-online-board .race-grid { gap: clamp(7px, 1vw, 10px); }
+  .race-online-board .race-grid-20 { grid-template-columns: repeat(5, minmax(64px, 1fr)); }
+  .race-online-board .race-grid-24, .race-online-board .race-grid-32, .race-online-board .race-grid-40, .race-online-board .race-grid-60 { grid-template-columns: repeat(6, minmax(64px, 1fr)); }
+}
+@media (min-width: 900px) {
+  .race-online-board .race-grid-16 { max-width: 520px; grid-template-columns: repeat(4, minmax(90px, 1fr)); }
+  .race-online-board .race-grid-20 { max-width: 620px; grid-template-columns: repeat(5, minmax(86px, 1fr)); }
+  .race-online-board .race-grid-24 { max-width: 720px; grid-template-columns: repeat(6, minmax(78px, 1fr)); }
+  .race-online-board .race-grid-32, .race-online-board .race-grid-40 { max-width: 920px; grid-template-columns: repeat(8, minmax(70px, 1fr)); }
+  .race-online-board .race-grid-60 { max-width: 1040px; grid-template-columns: repeat(8, minmax(68px, 1fr)); }
+}
+@media (min-width: 1200px) {
+  .race-online-board .race-grid-60 { max-width: 1180px; grid-template-columns: repeat(10, minmax(64px, 1fr)); }
+}
 @media (max-width: 390px) { .classic-grid { gap: 5px; } .classic-card-back strong { font-size: 8px; } }
 @media (min-width: 520px) { .memory-page { padding: 28px 20px; } .memory-shell { border: 1px solid rgba(255,255,255,.08); border-radius: 28px; background: rgba(7,10,17,.78); box-shadow: 0 35px 90px rgba(0,0,0,.42); padding: 16px 20px 22px; } }
-@media (prefers-reduced-motion: reduce) { .memory-card-inner, .memory-card:not(:disabled):hover .memory-card-front { transition: none; transform: none; } .memory-card.is-open .memory-card-inner { transform: rotateY(180deg); } }
+@media (prefers-reduced-motion: reduce) { .memory-card-inner, .memory-card:not(:disabled):hover .memory-card-front { transition: none; transform: none; } .memory-card.is-open .memory-card-inner { transform: rotateY(180deg); } .race-online-board .race-card, .race-online-board .race-card-inner { transition: none; } .race-online-board .race-card.open .race-card-inner, .race-online-board .race-card.matched .race-card-inner { transform: rotateY(180deg); } .race-online-board .race-card.matched .race-card-back { animation: none; } }
 .game-selection-card { position: relative; overflow: hidden; min-height: 260px; padding: 28px; border: 1px solid rgba(255,255,255,.13); border-radius: 24px; color: white; text-decoration: none; transition: transform .2s, border-color .2s; }
 .game-selection-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.4); }
 .game-selection-card h2 { margin: 22px 0 8px; font-size: 30px; }
