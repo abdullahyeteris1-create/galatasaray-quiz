@@ -8,7 +8,7 @@ export const MEMORY_RACE_LEVELS = {
 } as const;
 
 export type MemoryRaceLevel = keyof typeof MEMORY_RACE_LEVELS;
-export const MEMORY_RACE_MAX_PLAYERS = [2, 4, 6, 8] as const;
+export const MEMORY_RACE_MAX_PLAYERS = [2, 3, 4, 5, 6, 7, 8] as const;
 export const MEMORY_RACE_ROUNDS = [3, 5, 10] as const;
 export type MemoryRaceSession = { roomId: string; playerId: string; token: string; code: string };
 
